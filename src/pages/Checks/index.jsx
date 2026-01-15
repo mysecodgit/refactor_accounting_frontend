@@ -37,10 +37,10 @@ const Checks = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
     } catch (error) {
       console.log("Error fetching accounts", error);
     }
@@ -50,10 +50,10 @@ const Checks = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -63,10 +63,10 @@ const Checks = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      setPeople(data || []);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -77,12 +77,12 @@ const Checks = () => {
       setLoading(true);
       let url = "checks";
       if (buildingId) {
-        url = `buildings/${buildingId}/checks`;
+        url = `v1/buildings/${buildingId}/checks`;
       } else {
         url = `checks?building_id=${buildingId || ""}`;
       }
       const { data } = await axiosInstance.get(url);
-      setChecks(data || []);
+      setChecks(data.data || []);
     } catch (error) {
       console.log("Error fetching checks", error);
       toast.error("Failed to fetch checks");
@@ -96,10 +96,10 @@ const Checks = () => {
       setLoading(true);
       let url = `checks/${checkId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/checks/${checkId}`;
+        url = `v1/buildings/${buildingId}/checks/${checkId}`;
       }
       const { data: checkResponse } = await axiosInstance.get(url);
-      setViewingCheck(checkResponse);
+      setViewingCheck(checkResponse.data);
       setShowCheckDetailsModal(true);
     } catch (error) {
       console.log("Error fetching check details", error);

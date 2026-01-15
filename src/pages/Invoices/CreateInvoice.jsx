@@ -108,7 +108,7 @@ const CreateInvoice = () => {
           items: invoiceItems.map((item) => ({
             item_id: parseInt(item.item_id),
             qty: item.qty !== null && item.qty !== undefined ? item.qty : null, // Send qty as-is without rounding
-            rate: item.rate ? item.rate.toString() : null,
+            rate: item.rate ? parseFloat(item.rate) : null,
             total: item.total !== null && item.total !== undefined ? item.total : null, // Send manually edited total
             previous_value: item.previous_value !== null && item.previous_value !== undefined ? item.previous_value : null,
             current_value: item.current_value !== null && item.current_value !== undefined ? item.current_value : null,
@@ -117,7 +117,7 @@ const CreateInvoice = () => {
 
         let url = "invoices";
         if (buildingId) {
-          url = `buildings/${buildingId}/invoices`;
+          url = `v1/buildings/${buildingId}/invoices`;
         }
 
         const config = {
@@ -126,7 +126,7 @@ const CreateInvoice = () => {
           },
         };
 
-        const { data } = await axiosInstance.post(url, payload, config);
+        const { data } = await axiosInstance.post(url, payload);
         toast.success("Invoice created successfully");
         navigate(`/building/${buildingId}/invoices`);
       } catch (err) {
@@ -140,12 +140,12 @@ const CreateInvoice = () => {
 
   const fetchItems = async () => {
     try {
-      let url = "items";
+      let url = "v1/items";
       if (buildingId) {
-        url = `buildings/${buildingId}/items`;
+        url = `v1/buildings/${buildingId}/items`;
       }
       const { data } = await axiosInstance.get(url);
-      setItems(data || []);
+      setItems(data.data || []);
     } catch (error) {
       console.log("Error fetching items", error);
     }
@@ -155,7 +155,7 @@ const CreateInvoice = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
       setUnits(data || []);
@@ -166,13 +166,13 @@ const CreateInvoice = () => {
 
   const fetchPeople = async () => {
     try {
-      let url = "people";
+      let url = "v1/people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      const customers = (data || []).filter((person) => {
-        const typeTitle = person.people_type?.title || person.type?.title || "";
+      const customers = (data.data || []).filter((person) => {
+        const typeTitle = person.type?.title || person.type?.title || "";
         return typeTitle.toLowerCase() === "customer";
       });
       setPeople(customers);
@@ -187,8 +187,8 @@ const CreateInvoice = () => {
       return;
     }
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/units-by-people/${peopleId}`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/people/${peopleId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units for people", error);
       setUnits([]);
@@ -199,13 +199,13 @@ const CreateInvoice = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
       
-      const arAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const arAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase().includes("receivable") || 
                typeName.toLowerCase().includes("account receivable") ||
                typeName.toLowerCase().includes("ar");
@@ -252,8 +252,8 @@ const CreateInvoice = () => {
       return;
     }
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/readings/unit/${unitId}`);
-      setReadings(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/units/${unitId}/readings`);
+      setReadings(data.data || []);
     } catch (error) {
       console.log("Error fetching readings for unit", error);
       setReadings([]);
@@ -298,7 +298,7 @@ const CreateInvoice = () => {
   };
 
   const addReadingAsInvoiceItem = (readingItem) => {
-    const reading = readingItem.reading;
+    const reading = readingItem;
     const item = readingItem.item;
     
     if (!item || !item.id) {
@@ -1011,14 +1011,14 @@ const CreateInvoice = () => {
                           </thead>
                           <tbody>
                             {readings.map((readingItem) => {
-                              const prev = readingItem.reading.previous_value || 0;
-                              const current = readingItem.reading.current_value || 0;
+                              const prev = readingItem.previous_value || 0;
+                              const current = readingItem.current_value || 0;
                               const consumption = current - prev;
-                              const unitPrice = readingItem.reading.unit_price || 0;
-                              const total = readingItem.reading.total_amount || 0;
+                              const unitPrice = readingItem.unit_price || 0;
+                              const total = readingItem.total_amount || 0;
                               return (
                                 <tr 
-                                  key={readingItem.reading.id}
+                                  key={readingItem.id}
                                   onClick={() => addReadingAsInvoiceItem(readingItem)}
                                   style={{ 
                                     cursor: "pointer",
@@ -1032,10 +1032,10 @@ const CreateInvoice = () => {
                                   }}
                                   title="Click to add this reading to invoice items"
                                 >
-                                  <td>{readingItem.item?.name || "N/A"}</td>
+                                  <td>{readingItem.item_name || "N/A"}</td>
                                   <td>
-                                    {readingItem.reading.reading_date
-                                      ? moment(readingItem.reading.reading_date).format("MM/DD/YY")
+                                    {readingItem.reading_date
+                                      ? moment(readingItem.reading_date).format("MM/DD/YY")
                                       : "N/A"}
                                   </td>
                                   <td>{prev.toFixed(3)}</td>

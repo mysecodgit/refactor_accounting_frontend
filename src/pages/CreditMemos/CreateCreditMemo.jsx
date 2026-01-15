@@ -78,9 +78,9 @@ const CreateCreditMemo = () => {
           building_id: parseInt(values.building_id),
         };
 
-        let url = creditMemoId ? `credit-memos/${creditMemoId}` : "credit-memos";
+        let url = creditMemoId ? `v1/credit-memos/${creditMemoId}` : "v1/credit-memos";
         if (buildingId) {
-          url = creditMemoId ? `buildings/${buildingId}/credit-memos/${creditMemoId}` : `buildings/${buildingId}/credit-memos`;
+          url = creditMemoId ? `v1/buildings/${buildingId}/credit-memos/${creditMemoId}` : `v1/buildings/${buildingId}/credit-memos`;
         }
 
         const config = {
@@ -90,10 +90,10 @@ const CreateCreditMemo = () => {
         };
 
         if (creditMemoId) {
-          const { data } = await axiosInstance.put(url, { ...payload, id: parseInt(creditMemoId) }, config);
+          const { data } = await axiosInstance.put(url, { ...payload, id: parseInt(creditMemoId) });
           toast.success("Credit memo updated successfully");
         } else {
-          const { data } = await axiosInstance.post(url, payload, config);
+          const { data } = await axiosInstance.post(url, payload);
           toast.success("Credit memo created successfully");
         }
         navigate(`/building/${buildingId}/credit-memos`);
@@ -108,14 +108,14 @@ const CreateCreditMemo = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
       
       // Filter deposit accounts (Bank, Cash, Asset, and Expense accounts)
-      const depositAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const depositAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase().includes("bank") || 
                typeName.toLowerCase().includes("cash") ||
                typeName.toLowerCase().includes("asset") ||
@@ -124,8 +124,8 @@ const CreateCreditMemo = () => {
       setDepositAccounts(depositAccountsList);
 
       // Filter liability accounts to only Account Receivable accounts
-      const liabilityAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const liabilityAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase() === "account receivable";
       });
       setLiabilityAccounts(liabilityAccountsList);
@@ -138,10 +138,10 @@ const CreateCreditMemo = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -151,11 +151,11 @@ const CreateCreditMemo = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      const customers = (data || []).filter((person) => {
-        const typeTitle = person.people_type?.title || person.type?.title || "";
+      const customers = (data.data || []).filter((person) => {
+        const typeTitle = person.type?.title || person.type?.title || "";
         return typeTitle.toLowerCase() === "customer";
       });
       setPeople(customers);
@@ -170,8 +170,8 @@ const CreateCreditMemo = () => {
       return;
     }
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/units-by-people/${peopleId}`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/people/${peopleId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units for people", error);
       setUnits([]);
@@ -184,10 +184,10 @@ const CreateCreditMemo = () => {
       setLoading(true);
       let url = `credit-memos/${creditMemoId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/credit-memos/${creditMemoId}`;
+        url = `v1/buildings/${buildingId}/credit-memos/${creditMemoId}`;
       }
       const { data: creditMemoResponse } = await axiosInstance.get(url);
-      const creditMemo = creditMemoResponse.credit_memo || creditMemoResponse;
+      const creditMemo = creditMemoResponse.data.credit_memo || creditMemoResponse.data;
       validation.setValues({
         reference: creditMemo.reference || creditMemo.Reference || "",
         date: creditMemo.date ? moment(creditMemo.date).format("YYYY-MM-DD") : moment().format("YYYY-MM-DD"),

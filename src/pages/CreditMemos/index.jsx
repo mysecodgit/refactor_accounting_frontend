@@ -35,12 +35,12 @@ const CreditMemos = () => {
 
   const fetchAccounts = async () => {
     try {
-      let url = "accounts";
+      let url = "v1/accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
     } catch (error) {
       console.log("Error fetching accounts", error);
     }
@@ -48,12 +48,12 @@ const CreditMemos = () => {
 
   const fetchPeople = async () => {
     try {
-      let url = "people";
+      let url = "v1/people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      setPeople(data || []);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -61,12 +61,12 @@ const CreditMemos = () => {
 
   const fetchUnits = async () => {
     try {
-      let url = "units";
+      let url = "v1/units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -77,12 +77,12 @@ const CreditMemos = () => {
       setLoading(true);
       let url = "credit-memos";
       if (buildingId) {
-        url = `buildings/${buildingId}/credit-memos`;
+        url = `v1/buildings/${buildingId}/credit-memos`;
       } else {
-        url = `credit-memos?building_id=${buildingId || ""}`;
+        url = `v1/credit-memos?building_id=${buildingId || ""}`;
       }
       const { data } = await axiosInstance.get(url);
-      setCreditMemos(data || []);
+      setCreditMemos(data.data || []);
     } catch (error) {
       console.log("Error fetching credit memos", error);
       toast.error("Failed to fetch credit memos");
@@ -94,12 +94,12 @@ const CreditMemos = () => {
   const fetchCreditMemoDetails = async (creditMemoId) => {
     try {
       setLoading(true);
-      let url = `credit-memos/${creditMemoId}`;
+      let url = `v1/credit-memos/${creditMemoId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/credit-memos/${creditMemoId}`;
+        url = `v1/buildings/${buildingId}/credit-memos/${creditMemoId}`;
       }
       const { data: creditMemoResponse } = await axiosInstance.get(url);
-      setViewingCreditMemo(creditMemoResponse);
+      setViewingCreditMemo(creditMemoResponse.data);
       setShowCreditMemoDetailsModal(true);
     } catch (error) {
       console.log("Error fetching credit memo details", error);

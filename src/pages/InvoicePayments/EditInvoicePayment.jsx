@@ -70,7 +70,7 @@ const EditInvoicePayment = () => {
 
         let url = `invoice-payments/${paymentId}`;
         if (buildingId) {
-          url = `buildings/${buildingId}/invoice-payments/${paymentId}`;
+          url = `v1/buildings/${buildingId}/invoice-payments/${paymentId}`;
         }
 
         const config = {
@@ -79,7 +79,7 @@ const EditInvoicePayment = () => {
           },
         };
 
-        await axiosInstance.put(url, payload, config);
+        await axiosInstance.put(url, payload);
         toast.success("Invoice payment updated successfully");
         navigate(`/building/${buildingId}/invoice-payments`);
       } catch (err) {
@@ -100,16 +100,16 @@ const EditInvoicePayment = () => {
       // Reset form first to clear any previous payment data
       validation.resetForm();
       
-      let url = `invoice-payments/${paymentId}`;
+      let url = `v1/invoice-payments/${paymentId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/invoice-payments/${paymentId}`;
+        url = `v1/buildings/${buildingId}/invoice-payments/${paymentId}`;
       }
       console.log("Fetching from URL:", url); // Debug
       const { data: response } = await axiosInstance.get(url);
       console.log("Full API response for edit:", response); // Debug
       
       // The API returns InvoicePaymentResponse with payment, splits, transaction, invoice
-      const payment = response.payment || response;
+      const payment = response.data.payment || response.data;
       console.log("Payment object extracted:", payment); // Debug
       console.log("Payment.date:", payment.date); // Debug
       console.log("Payment.Date:", payment.Date); // Debug
@@ -208,13 +208,13 @@ const EditInvoicePayment = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
       
-      const assetAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const assetAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase().includes("asset") || 
                typeName.toLowerCase().includes("cash") ||
                typeName.toLowerCase().includes("bank");
@@ -229,10 +229,10 @@ const EditInvoicePayment = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -242,10 +242,10 @@ const EditInvoicePayment = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      setPeople(data || []);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -260,13 +260,13 @@ const EditInvoicePayment = () => {
     // Get the invoice_id from the payment
     try {
       setLoading(true);
-      let url = `invoice-payments/${paymentId}`;
+      let url = `v1/invoice-payments/${paymentId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/invoice-payments/${paymentId}`;
+        url = `v1/buildings/${buildingId}/invoice-payments/${paymentId}`;
       }
       const { data: response } = await axiosInstance.get(url);
       // The API returns InvoicePaymentResponse with payment, splits, transaction, invoice
-      const payment = response.payment || response;
+      const payment = response.data.payment || response.data;
 
       const payload = {
         date: validation.values.date,
@@ -276,13 +276,13 @@ const EditInvoicePayment = () => {
         building_id: parseInt(validation.values.building_id),
       };
 
-      let previewUrl = "invoice-payments/preview";
+      let previewUrl = "v1/invoice-payments/preview";
       if (buildingId) {
-        previewUrl = `buildings/${buildingId}/invoice-payments/preview`;
+        previewUrl = `v1/buildings/${buildingId}/invoice-payments/preview`;
       }
 
       const { data } = await axiosInstance.post(previewUrl, payload);
-      setSplitsPreview(data);
+      setSplitsPreview(data.data);
       setShowSplitsModal(true);
     } catch (err) {
       const errorMsg = err.response?.data?.error || err.response?.data?.errors || "Something went wrong";

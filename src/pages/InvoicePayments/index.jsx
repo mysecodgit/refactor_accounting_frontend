@@ -58,10 +58,10 @@ const InvoicePayments = () => {
     try {
       let url = "invoices";
       if (buildingId) {
-        url = `buildings/${buildingId}/invoices`;
+        url = `v1/buildings/${buildingId}/invoices`;
       }
       const { data } = await axiosInstance.get(url);
-      setInvoices(data || []);
+      setInvoices(data.data || []);
     } catch (error) {
       console.log("Error fetching invoices", error);
     }
@@ -71,10 +71,10 @@ const InvoicePayments = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -84,11 +84,11 @@ const InvoicePayments = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
       // Store all people for mapping people_id to names in the table
-      setPeople(data || []);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -97,8 +97,8 @@ const InvoicePayments = () => {
   // Get customers only for the dropdown filter
   const customers = useMemo(() => {
     return (people || []).filter(person => 
-      person.people_type?.title?.toLowerCase() === "customer" || 
-      person.people_type?.Title?.toLowerCase() === "customer"
+      person.type?.title?.toLowerCase() === "customer" || 
+      person.type?.Title?.toLowerCase() === "customer"
     );
   }, [people]);
 
@@ -106,10 +106,10 @@ const InvoicePayments = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
     } catch (error) {
       console.log("Error fetching accounts", error);
     }
@@ -120,7 +120,7 @@ const InvoicePayments = () => {
       setLoading(true);
       let url = "invoice-payments";
       if (buildingId) {
-        url = `buildings/${buildingId}/invoice-payments`;
+        url = `v1/buildings/${buildingId}/invoice-payments`;
       } else {
         url = `invoice-payments?building_id=${buildingId || ""}`;
       }
@@ -141,7 +141,7 @@ const InvoicePayments = () => {
       }
       
       const { data } = await axiosInstance.get(url, { params });
-      setPayments(data || []);
+      setPayments(data.data || []);
     } catch (error) {
       console.log("Error fetching invoice payments", error);
       toast.error("Failed to fetch invoice payments");
@@ -188,12 +188,12 @@ const InvoicePayments = () => {
   const handleViewClick = useCallback(async (paymentId) => {
     try {
       setLoading(true);
-      let url = `invoice-payments/${paymentId}`;
+      let url = `v1/invoice-payments/${paymentId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/invoice-payments/${paymentId}`;
+        url = `v1/buildings/${buildingId}/invoice-payments/${paymentId}`;
       }
       const { data } = await axiosInstance.get(url);
-      setViewingPayment(data);
+      setViewingPayment(data.data);
       setShowViewModal(true);
     } catch (error) {
       console.error("Error fetching payment details", error);
@@ -256,8 +256,8 @@ const InvoicePayments = () => {
         cell: (cell) => {
           const status = cell.row.original.status;
           return (
-            <span className={`badge ${status === 1 ? "bg-success" : "bg-secondary"}`}>
-              {status === 1 ? "Active" : "Inactive"}
+            <span className={`badge ${status == 1 ? "bg-success" : "bg-secondary"}`}>
+              {status == 1 ? "Active" : "Inactive"}
             </span>
           );
         },

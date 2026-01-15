@@ -88,7 +88,7 @@ const CreateCheck = () => {
 
         let url = checkId ? `checks/${checkId}` : "checks";
         if (buildingId) {
-          url = checkId ? `buildings/${buildingId}/checks/${checkId}` : `buildings/${buildingId}/checks`;
+          url = checkId ? `v1/buildings/${buildingId}/checks/${checkId}` : `v1/buildings/${buildingId}/checks`;
         }
 
         const config = {
@@ -98,10 +98,10 @@ const CreateCheck = () => {
         };
 
         if (checkId) {
-          const { data } = await axiosInstance.put(url, payload, config);
+          const { data } = await axiosInstance.put(url, payload);
           toast.success("Check updated successfully");
         } else {
-          const { data } = await axiosInstance.post(url, payload, config);
+          const { data } = await axiosInstance.post(url, payload);
           toast.success("Check created successfully");
         }
         navigate(`/building/${buildingId}/checks`);
@@ -118,14 +118,14 @@ const CreateCheck = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
       
       // Filter payment accounts (Bank, Credit Card, etc. - Asset accounts)
-      const paymentAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const paymentAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase().includes("bank") || 
                typeName.toLowerCase().includes("credit card") ||
                typeName.toLowerCase().includes("cash");
@@ -140,10 +140,10 @@ const CreateCheck = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -153,10 +153,10 @@ const CreateCheck = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      setPeople(data || []);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -168,10 +168,10 @@ const CreateCheck = () => {
       setLoading(true);
       let url = `checks/${checkId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/checks/${checkId}`;
+        url = `v1/buildings/${buildingId}/checks/${checkId}`;
       }
       const { data: checkResponse } = await axiosInstance.get(url);
-      const check = checkResponse.check || checkResponse;
+      const check = checkResponse.data.check || checkResponse.data;
       validation.setValues({
         check_date: check.check_date ? moment(check.check_date).format("YYYY-MM-DD") : moment().format("YYYY-MM-DD"),
         reference_number: check.reference_number || "",
@@ -182,7 +182,7 @@ const CreateCheck = () => {
       });
       
       // Set expense lines
-      const lines = (checkResponse.expense_lines || []).map((line) => ({
+      const lines = (checkResponse.data.expense_lines || []).map((line) => ({
         account_id: line.account_id || "",
         unit_id: line.unit_id || "",
         people_id: line.people_id || "",

@@ -92,16 +92,16 @@ const EditInvoice = () => {
           items: invoiceItems.map((item) => ({
             item_id: parseInt(item.item_id),
             qty: item.qty !== null && item.qty !== undefined ? item.qty : null, // Send qty as-is without rounding
-            rate: item.rate ? item.rate.toString() : null,
+            rate: item.rate ? parseFloat(item.rate) : null, // TODO: Check if this is correct
             total: item.total !== null && item.total !== undefined ? item.total : null, // Send manually edited total
             previous_value: item.previous_value !== null && item.previous_value !== undefined ? item.previous_value : null,
             current_value: item.current_value !== null && item.current_value !== undefined ? item.current_value : null,
           })),
         };
 
-        let url = `invoices/${invoiceId}`;
+        let url = `v1/invoices/${invoiceId}`;
         if (buildingId) {
-          url = `buildings/${buildingId}/invoices/${invoiceId}`;
+          url = `v1/buildings/${buildingId}/invoices/${invoiceId}`;
         }
 
         const config = {
@@ -110,7 +110,7 @@ const EditInvoice = () => {
           },
         };
 
-        const { data } = await axiosInstance.put(url, payload, config);
+        const { data } = await axiosInstance.put(url, payload);
         toast.success("Invoice updated successfully");
         navigate(`/building/${buildingId}/invoices`);
       } catch (err) {
@@ -126,10 +126,10 @@ const EditInvoice = () => {
     try {
       let url = "items";
       if (buildingId) {
-        url = `buildings/${buildingId}/items`;
+        url = `v1/buildings/${buildingId}/items`;
       }
       const { data } = await axiosInstance.get(url);
-      setItems(data || []);
+      setItems(data.data || []);
     } catch (error) {
       console.log("Error fetching items", error);
     }
@@ -139,10 +139,10 @@ const EditInvoice = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -152,11 +152,11 @@ const EditInvoice = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      const customers = (data || []).filter((person) => {
-        const typeTitle = person.people_type?.title || person.type?.title || "";
+      const customers = (data.data || []).filter((person) => {
+        const typeTitle = person.type?.title || person.type?.title || "";
         return typeTitle.toLowerCase() === "customer";
       });
       setPeople(customers);
@@ -171,8 +171,8 @@ const EditInvoice = () => {
       return;
     }
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/units-by-people/${peopleId}`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/people/${peopleId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units for people", error);
       setUnits([]);
@@ -183,13 +183,13 @@ const EditInvoice = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
       
-      const arAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const arAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase().includes("receivable") || 
                typeName.toLowerCase().includes("account receivable") ||
                typeName.toLowerCase().includes("ar");
@@ -203,14 +203,14 @@ const EditInvoice = () => {
   const fetchInvoiceForEdit = async () => {
     try {
       setLoading(true);
-      let url = `invoices/${invoiceId}`;
+      let url = `v1/invoices/${invoiceId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/invoices/${invoiceId}`;
+        url = `v1/buildings/${buildingId}/invoices/${invoiceId}`;
       }
       const { data: invoiceResponse } = await axiosInstance.get(url);
       
-      const invoiceData = invoiceResponse.invoice || invoiceResponse;
-      const itemsData = invoiceResponse.items || [];
+      const invoiceData = invoiceResponse.data.invoice || invoiceResponse.data;
+      const itemsData = invoiceResponse.data.items || [];
       
       const formatDate = (dateStr) => {
         if (!dateStr) return "";

@@ -36,10 +36,10 @@ const Journals = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
     } catch (error) {
       console.log("Error fetching accounts", error);
     }
@@ -49,10 +49,10 @@ const Journals = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -63,12 +63,12 @@ const Journals = () => {
       setLoading(true);
       let url = "journals";
       if (buildingId) {
-        url = `buildings/${buildingId}/journals`;
+        url = `v1/buildings/${buildingId}/journals`;
       } else {
         url = `journals?building_id=${buildingId || ""}`;
       }
       const { data } = await axiosInstance.get(url);
-      setJournals(data || []);
+      setJournals(data.data || []);
     } catch (error) {
       console.log("Error fetching journals", error);
       toast.error("Failed to fetch journals");
@@ -82,10 +82,10 @@ const Journals = () => {
       setLoading(true);
       let url = `journals/${journalId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/journals/${journalId}`;
+        url = `v1/buildings/${buildingId}/journals/${journalId}`;
       }
       const { data: journalResponse } = await axiosInstance.get(url);
-      setViewingJournal(journalResponse);
+      setViewingJournal(journalResponse.data);
       setShowJournalDetailsModal(true);
     } catch (error) {
       console.log("Error fetching journal details", error);

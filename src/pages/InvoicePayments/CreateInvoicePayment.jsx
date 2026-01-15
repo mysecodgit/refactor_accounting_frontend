@@ -88,7 +88,7 @@ const CreateInvoicePayment = () => {
 
         let url = "invoice-payments";
         if (buildingId) {
-          url = `buildings/${buildingId}/invoice-payments`;
+          url = `v1/buildings/${buildingId}/invoice-payments`;
         }
 
         const config = {
@@ -97,7 +97,7 @@ const CreateInvoicePayment = () => {
           },
         };
 
-        await axiosInstance.post(url, payload, config);
+        await axiosInstance.post(url, payload);
         toast.success("Invoice payment created successfully");
         navigate(`/building/${buildingId}/invoice-payments`);
       } catch (err) {
@@ -113,11 +113,11 @@ const CreateInvoicePayment = () => {
     try {
       let url = "invoices";
       if (buildingId) {
-        url = `buildings/${buildingId}/invoices`;
+        url = `v1/buildings/${buildingId}/invoices`;
       }
       const { data } = await axiosInstance.get(url);
-      setInvoices(data || []);
-      calculateInvoiceBalances(data || []);
+      setInvoices(data.data || []);
+      // calculateInvoiceBalances(data.data || []); // TODO: remove it if not needed
     } catch (error) {
       console.log("Error fetching invoices", error);
     }
@@ -127,10 +127,10 @@ const CreateInvoicePayment = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -140,10 +140,10 @@ const CreateInvoicePayment = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      setPeople(data || []);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -153,13 +153,13 @@ const CreateInvoicePayment = () => {
     try {
       const balances = {};
       for (const invoice of invoicesList) {
-        let url = `invoices/${invoice.id}/payments`;
+        let url = `v1/invoices/${invoice.id}/payments`;
         if (buildingId) {
-          url = `buildings/${buildingId}/invoices/${invoice.id}/payments`;
+          url = `v1/buildings/${buildingId}/invoices/${invoice.id}/payments`;
         }
         try {
           const { data: invoicePayments } = await axiosInstance.get(url);
-          const totalPaid = (invoicePayments || []).reduce((sum, payment) => {
+          const totalPaid = (invoicePayments.data || []).reduce((sum, payment) => {
             return sum + (parseFloat(payment.amount) || 0);
           }, 0);
           balances[invoice.id] = (parseFloat(invoice.amount) || 0) - totalPaid;
@@ -177,13 +177,13 @@ const CreateInvoicePayment = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
       
-      const assetAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const assetAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase().includes("asset") || 
                typeName.toLowerCase().includes("cash") ||
                typeName.toLowerCase().includes("bank");
@@ -212,13 +212,13 @@ const CreateInvoicePayment = () => {
 
       let url = "invoice-payments/preview";
       if (buildingId) {
-        url = `buildings/${buildingId}/invoice-payments/preview`;
+        url = `v1/buildings/${buildingId}/invoice-payments/preview`;
       }
 
       const { data } = await axiosInstance.post(url, payload);
-      console.log("Preview splits response:", data);
-      console.log("First split:", data?.splits?.[0]);
-      setSplitsPreview(data);
+      console.log("Preview splits response:", data.data);
+      console.log("First split:", data.data?.splits?.[0]);
+      setSplitsPreview(data.data);
       setShowSplitsModal(true);
     } catch (err) {
       const errorMsg = err.response?.data?.error || err.response?.data?.errors || "Something went wrong";
@@ -316,24 +316,17 @@ const CreateInvoicePayment = () => {
                             <option value="">Select Invoice</option>
                             {invoices
                               .filter((invoice) => {
-                                const balance = invoiceBalances[invoice.id] !== undefined 
-                                  ? invoiceBalances[invoice.id] 
-                                  : (parseFloat(invoice.amount) || 0);
+                                const balance = invoice.amount - invoice.paid_amount - invoice.applied_credits_total;
                                 return balance !== 0;
                               })
                               .map((invoice) => {
-                                const unit = units.find((u) => u.id === invoice.unit_id);
-                                const person = people.find((p) => p.id === invoice.people_id);
-                                const balance = invoiceBalances[invoice.id] !== undefined 
-                                  ? invoiceBalances[invoice.id] 
-                                  : (parseFloat(invoice.amount) || 0);
-                                const unitName = unit ? (unit.unit_number || unit.name) : "N/A";
-                                const customerName = person ? person.name : "N/A";
+                                const balance = invoice.amount - invoice.paid_amount - invoice.applied_credits_total;
+                                  
                                 const balanceText = balance >= 0 ? balance.toFixed(2) : `(${Math.abs(balance).toFixed(2)})`;
                                 
                                 return (
                                   <option key={invoice.id} value={invoice.id}>
-                                    Invoice #{invoice.invoice_no} | Unit: {unitName} | Customer: {customerName} | Balance: {balanceText}
+                                    Invoice #{invoice.invoice_no} | Unit: {invoice.unit.name} | Customer: {invoice.people.name} | Balance: {balanceText}
                                   </option>
                                 );
                               })}

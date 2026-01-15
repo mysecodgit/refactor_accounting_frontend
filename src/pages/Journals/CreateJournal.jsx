@@ -84,9 +84,9 @@ const CreateJournal = () => {
           })),
         };
 
-        let url = journalId ? `journals/${journalId}` : "journals";
+        let url = journalId ? `v1/journals/${journalId}` : "v1/journals";
         if (buildingId) {
-          url = journalId ? `buildings/${buildingId}/journals/${journalId}` : `buildings/${buildingId}/journals`;
+          url = journalId ? `v1/buildings/${buildingId}/journals/${journalId}` : `v1/buildings/${buildingId}/journals`;
         }
 
         const config = {
@@ -96,10 +96,10 @@ const CreateJournal = () => {
         };
 
         if (journalId) {
-          const { data } = await axiosInstance.put(url, payload, config);
+          const { data } = await axiosInstance.put(url, payload);
           toast.success("Journal updated successfully");
         } else {
-          const { data } = await axiosInstance.post(url, payload, config);
+          const { data } = await axiosInstance.post(url, payload);
           toast.success("Journal created successfully");
         }
         navigate(`/building/${buildingId}/journals`);
@@ -116,10 +116,10 @@ const CreateJournal = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
     } catch (error) {
       console.log("Error fetching accounts", error);
     }
@@ -129,10 +129,10 @@ const CreateJournal = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -142,10 +142,10 @@ const CreateJournal = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      setPeople(data || []);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -157,10 +157,10 @@ const CreateJournal = () => {
       setLoading(true);
       let url = `journals/${journalId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/journals/${journalId}`;
+        url = `v1/buildings/${buildingId}/journals/${journalId}`;
       }
       const { data: journalResponse } = await axiosInstance.get(url);
-      const journal = journalResponse.journal || journalResponse;
+      const journal = journalResponse.data.journal || journalResponse.data;
       validation.setValues({
         reference: journal.reference || journal.Reference || "",
         journal_date: journal.journal_date ? moment(journal.journal_date).format("YYYY-MM-DD") : moment().format("YYYY-MM-DD"),
@@ -170,7 +170,7 @@ const CreateJournal = () => {
       });
       
       // Set journal lines
-      const lines = (journalResponse.lines || []).map((line) => ({
+      const lines = (journalResponse.data.lines || []).map((line) => ({
         account_id: line.account_id || "",
         unit_id: line.unit_id || "",
         people_id: line.people_id || "",
@@ -225,7 +225,7 @@ const CreateJournal = () => {
     if (field === "account_id") {
       const account = accounts.find((a) => a.id === parseInt(value));
       if (account) {
-        const typeName = account.account_type?.typeName || "";
+        const typeName = account.type?.typeName || "";
         if ((typeName.toLowerCase().includes("receivable") || typeName.toLowerCase().includes("payable")) && !newLines[index].people_id) {
           toast.warning(`People is required for ${typeName} accounts`);
         }
@@ -283,7 +283,7 @@ const CreateJournal = () => {
       
       const account = accounts.find((a) => a.id === parseInt(line.account_id));
       if (account) {
-        const typeName = account.account_type?.typeName || "";
+        const typeName = account.type?.typeName || "";
         if ((typeName.toLowerCase().includes("receivable") || typeName.toLowerCase().includes("payable")) && !line.people_id) {
           toast.error(`People is required for ${typeName} accounts`);
           return;
@@ -430,7 +430,7 @@ const CreateJournal = () => {
                             <tbody>
                               {journalLines.map((line, index) => {
                                 const account = accounts.find((a) => a.id === parseInt(line.account_id));
-                                const requiresPeople = account && (account.account_type?.typeName?.toLowerCase().includes("receivable") || account.account_type?.typeName?.toLowerCase().includes("payable"));
+                                const requiresPeople = account && (account.type?.typeName?.toLowerCase().includes("receivable") || account.type?.typeName?.toLowerCase().includes("payable"));
                                 return (
                                   <tr key={index}>
                                     <td>
