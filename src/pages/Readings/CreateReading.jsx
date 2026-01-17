@@ -118,12 +118,12 @@ const CreateReading = () => {
           };
         });
 
-        const response = await axiosInstance.post(`buildings/${buildingId}/readings/import`, {
+        const response = await axiosInstance.post(`v1/buildings/${buildingId}/readings/import`, {
           readings: readingsToCreate,
         });
 
-        const successCount = response.data.success_count || 0;
-        const failedCount = response.data.failed_count || 0;
+        const successCount = response.data.data.success_count || 0;
+        const failedCount = response.data.data.failed_count || 0;
 
         if (successCount > 0) {
           toast.success(`Successfully created ${successCount} reading(s)`);
@@ -131,8 +131,8 @@ const CreateReading = () => {
         if (failedCount > 0) {
           toast.warning(`${failedCount} reading(s) failed to create`);
         }
-        if (response.data.errors && response.data.errors.length > 0) {
-          response.data.errors.forEach((error) => toast.error(error));
+        if (response.data.data.errors && response.data.data.errors.length > 0) {
+          response.data.data.errors.forEach((error) => toast.error(error));
         }
 
         navigate(`/building/${buildingId}/readings`);
@@ -147,8 +147,8 @@ const CreateReading = () => {
 
   const fetchItems = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/items`);
-      setItems(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/items`);
+      setItems(data.data || []);
     } catch (error) {
       console.log("Error fetching items", error);
       toast.error("Failed to fetch items");
@@ -157,8 +157,8 @@ const CreateReading = () => {
 
   const fetchUnits = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/units`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
       toast.error("Failed to fetch units");
@@ -167,8 +167,8 @@ const CreateReading = () => {
 
   const fetchLeases = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases`);
-      setAllLeases(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/leases`);
+      setAllLeases(data.data || []);
     } catch (error) {
       console.log("Error fetching leases", error);
       toast.error("Failed to fetch leases");
@@ -187,13 +187,13 @@ const CreateReading = () => {
     }
 
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/unit/${unitId}`);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/leases/unit/${unitId}`);
       setRows((prevRows) =>
         prevRows.map((row) =>
           row.id === rowId
             ? {
                 ...row,
-                filteredLeases: data || [],
+                filteredLeases: data.data || [],
                 lease_id: "", // Clear lease when unit changes
               }
             : row
@@ -219,15 +219,15 @@ const CreateReading = () => {
     }
 
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/readings/latest`, {
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/readings/latest`, {
         params: {
           item_id: itemId,
           unit_id: unitId,
         },
       });
 
-      if (data.reading && data.reading.current_value !== null && data.reading.current_value !== undefined) {
-        const currentValue = data.reading.current_value;
+      if (data.data && data.data.current_value !== null && data.data.current_value !== undefined) {
+          const currentValue = data.data.current_value;
         setRows((prevRows) =>
           prevRows.map((row) =>
             row.id === rowId

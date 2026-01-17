@@ -49,8 +49,8 @@ const Readings = () => {
 
   const fetchItems = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/items`);
-      setItems(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/items`);
+      setItems(data.data || []);
     } catch (error) {
       console.log("Error fetching items", error);
     }
@@ -58,8 +58,8 @@ const Readings = () => {
 
   const fetchUnits = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/units`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -67,8 +67,8 @@ const Readings = () => {
 
   const fetchLeases = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases`);
-      setLeases(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/leases`);
+      setLeases(data.data || []);
     } catch (error) {
       console.log("Error fetching leases", error);
     }
@@ -81,8 +81,8 @@ const Readings = () => {
       if (filterStatus) {
         params.status = filterStatus;
       }
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/readings`, { params });
-      const readingsList = data || [];
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/readings`, { params });
+      const readingsList = data.data || [];
       setReadings(readingsList);
       applyFilters(readingsList);
     } catch (error) {
@@ -101,25 +101,25 @@ const Readings = () => {
     // Filter by date range
     if (filterStartDate) {
       filtered = filtered.filter((r) => {
-        const readingDate = moment(r.reading.reading_date);
+        const readingDate = moment(r.reading_date);
         return readingDate.isSameOrAfter(moment(filterStartDate), "day");
       });
     }
     if (filterEndDate) {
       filtered = filtered.filter((r) => {
-        const readingDate = moment(r.reading.reading_date);
+        const readingDate = moment(r.reading_date);
         return readingDate.isSameOrBefore(moment(filterEndDate), "day");
       });
     }
 
     // Filter by item
     if (filterItemId) {
-      filtered = filtered.filter((r) => r.reading.item_id === parseInt(filterItemId));
+      filtered = filtered.filter((r) => r.item_id === parseInt(filterItemId));
     }
 
     // Filter by unit
     if (filterUnitId) {
-      filtered = filtered.filter((r) => r.reading.unit_id === parseInt(filterUnitId));
+      filtered = filtered.filter((r) => r.unit_id === parseInt(filterUnitId));
     }
 
     setFilteredReadings(filtered);
@@ -131,12 +131,12 @@ const Readings = () => {
     let totalAmount = 0;
 
     filteredReadings.forEach((r) => {
-      const current = r.reading.current_value || 0;
-      const previous = r.reading.previous_value || 0;
+      const current = r.current_value || 0;
+      const previous = r.previous_value || 0;
       const consumption = current - previous;
       totalConsumption += consumption;
       
-      const amount = r.reading.total_amount || 0;
+      const amount = r.total_amount || 0;
       totalAmount += amount;
     });
 
@@ -149,8 +149,8 @@ const Readings = () => {
   const fetchReadingDetails = async (readingId) => {
     try {
       setLoading(true);
-      const { data: readingResponse } = await axiosInstance.get(`buildings/${buildingId}/readings/${readingId}`);
-      setViewingReading(readingResponse);
+      const { data: readingResponse } = await axiosInstance.get(`v1/buildings/${buildingId}/readings/${readingId}`);
+      setViewingReading(readingResponse.data);
       setShowReadingDetailsModal(true);
     } catch (error) {
       console.log("Error fetching reading details", error);
@@ -172,13 +172,13 @@ const Readings = () => {
   }, [filterStartDate, filterEndDate, filterItemId, filterUnitId, readings]);
 
   const handleViewClick = (reading) => {
-    fetchReadingDetails(reading.reading.id);
+    fetchReadingDetails(reading.id);
   };
 
   const handleEditClick = (reading) => {
     console.log("handleEditClick called with:", reading);
     console.log("Full reading object:", JSON.stringify(reading, null, 2));
-    const readingId = reading?.reading?.id || reading?.reading?.ID || reading?.id || reading?.ID;
+    const readingId = reading?.id || reading?.ID;
     console.log("Reading ID:", readingId);
     console.log("Building ID:", buildingId);
     if (readingId && buildingId) {
@@ -201,7 +201,7 @@ const Readings = () => {
     if (window.confirm("Are you sure you want to delete this reading?")) {
       try {
         setLoading(true);
-        await axiosInstance.delete(`buildings/${buildingId}/readings/${reading.reading.id}`);
+        await axiosInstance.delete(`buildings/${buildingId}/readings/${reading.id}`);
         toast.success("Reading deleted successfully");
         fetchReadings();
       } catch (error) {
@@ -341,18 +341,18 @@ const Readings = () => {
     try {
       setImporting(true);
       const response = await axiosInstance.post(
-        `buildings/${buildingId}/readings/import`,
+        `v1/buildings/${buildingId}/readings/import`,
         { readings }
       );
 
-      if (response.data.failed_count > 0) {
+      if (response.data.data.failed_count > 0) {
         toast.error(
-          `Import failed: ${response.data.failed_count} rows failed. ${response.data.success_count} rows imported.`
+          `Import failed: ${response.data.data.failed_count} rows failed. ${response.data.data.success_count} rows imported.`
         );
-        if (response.data.errors && response.data.errors.length > 0) {
-          console.error("Import errors:", response.data.errors);
+        if (response.data.data.errors && response.data.data.errors.length > 0) {
+          console.error("Import errors:", response.data.data.errors);
           // Show first few errors
-          const errorMsg = response.data.errors.slice(0, 5).join("; ");
+          const errorMsg = response.data.data.errors.slice(0, 5).join("; ");
           toast.error(`Errors: ${errorMsg}`);
         }
       } else {
@@ -384,22 +384,22 @@ const Readings = () => {
       {
         header: "Reading Date",
         id: "reading_date",
-        accessorKey: "reading.reading_date",
+        accessorKey: "reading_date",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const reading = cell.row.original.reading;
+          const reading = cell.row.original;
           return <>{reading.reading_date ? moment(reading.reading_date).format("YYYY-MM-DD") : "N/A"}</>;
         },
       },
       {
         header: "Reading Month",
         id: "reading_month",
-        accessorKey: "reading.reading_month",
+        accessorKey: "reading_month",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const reading = cell.row.original.reading;
+          const reading = cell.row.original;
           const month = reading.reading_month || "";
           const year = reading.reading_year || "";
           return <>{month || year ? `${month} ${year}`.trim() : "N/A"}</>;
@@ -428,58 +428,45 @@ const Readings = () => {
       {
         header: "Lease",
         id: "lease",
-        accessorKey: "lease",
+        accessorKey: "people_name",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const lease = cell.row.original.lease;
-          // Debug: log the lease data to see what we're getting
-          if (lease) {
-            console.log("Lease data:", lease);
-            // Check both lowercase (JSON) and uppercase (if transformed)
-            const people = lease.people || lease.People;
-            if (people) {
-              return <>{people.name || "N/A"}</>;
-            }
-            // If lease exists but no people, still show N/A
-            return <>N/A</>;
-          }
-          // Debug: log when there's no lease
-          console.log("No lease for reading:", cell.row.original.reading.id);
-          return <>N/A</>;
+          const peopleName = cell.row.original.people_name;
+          return <>{peopleName || "N/A"}</>;
         },
       },
       {
         header: "Previous Value",
         id: "previous_value",
-        accessorKey: "reading.previous_value",
+        accessorKey: "previous_value",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const value = cell.row.original.reading.previous_value;
-          return <>{value !== null ? parseFloat(value).toFixed(3) : "N/A"}</>;
+          const value = cell.row.original.previous_value;
+          return <>{value !== null && value !== undefined ? parseFloat(value).toFixed(3) : "N/A"}</>;
         },
       },
       {
         header: "Current Value",
         id: "current_value",
-        accessorKey: "reading.current_value",
+        accessorKey: "current_value",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const value = cell.row.original.reading.current_value;
-          return <>{value !== null ? parseFloat(value).toFixed(3) : "N/A"}</>;
+          const value = cell.row.original.current_value;
+          return <>{value !== null && value !== undefined ? parseFloat(value).toFixed(3) : "N/A"}</>;
         },
       },
       {
         header: "Unit Price",
         id: "unit_price",
-        accessorKey: "reading.unit_price",
+        accessorKey: "unit_price",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const value = cell.row.original.reading.unit_price;
-          return <>{value !== null ? parseFloat(value).toFixed(2) : "N/A"}</>;
+          const value = cell.row.original.unit_price;
+          return <>{value !== null && value !== undefined ? parseFloat(value).toFixed(2) : "N/A"}</>;
         },
       },
       {
@@ -489,8 +476,8 @@ const Readings = () => {
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const current = cell.row.original.reading.current_value || 0;
-          const previous = cell.row.original.reading.previous_value || 0;
+          const current = cell.row.original.current_value || 0;
+          const previous = cell.row.original.previous_value || 0;
           const consumption = current - previous;
           return <>{consumption.toFixed(3)}</>;
         },
@@ -498,32 +485,32 @@ const Readings = () => {
       {
         header: "Total Amount",
         id: "total_amount",
-        accessorKey: "reading.total_amount",
+        accessorKey: "total_amount",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const value = cell.row.original.reading.total_amount;
-          return <>{value !== null ? parseFloat(value).toFixed(2) : "N/A"}</>;
+          const value = cell.row.original.total_amount;
+          return <>{value !== null && value !== undefined ? parseFloat(value).toFixed(2) : "N/A"}</>;
         },
       },
       {
         header: "Notes",
         id: "notes",
-        accessorKey: "reading.notes",
+        accessorKey: "notes",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          return <>{cell.row.original.reading.notes || "N/A"}</>;
+          return <>{cell.row.original.notes || "N/A"}</>;
         },
       },
       {
         header: "Status",
         id: "status",
-        accessorKey: "reading.status",
+        accessorKey: "status",
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell) => {
-          const status = cell.row.original.reading.status;
+          const status = cell.row.original.status;
           return (
             <Badge color={status === "1" ? "success" : "danger"}>
               {status === "1" ? "Active" : "Inactive"}
@@ -538,7 +525,7 @@ const Readings = () => {
         enableColumnFilter: false,
         enableSorting: false,
         cell: (cell) => {
-          const reading = cell.row.original.reading;
+          const reading = cell.row.original;
           const readingId = reading?.id || reading?.ID;
           return (
             <>
@@ -738,91 +725,91 @@ const Readings = () => {
             <div>
               <Row className="mb-3">
                 <Col md={6}>
-                  <strong>ID:</strong> {viewingReading.reading.id}
+                  <strong>ID:</strong> {viewingReading.id}
                 </Col>
                 <Col md={6}>
                   <strong>Status:</strong>{" "}
-                  <Badge color={viewingReading.reading.status === "1" ? "success" : "danger"}>
-                    {viewingReading.reading.status === "1" ? "Active" : "Inactive"}
+                  <Badge color={viewingReading.status === "1" ? "success" : "danger"}>
+                    {viewingReading.status === "1" ? "Active" : "Inactive"}
                   </Badge>
                 </Col>
               </Row>
               <Row className="mb-3">
                 <Col md={6}>
-                  <strong>Item:</strong> {viewingReading.item.name}
+                  <strong>Item:</strong> {viewingReading.item?.name || "N/A"}
                 </Col>
                 <Col md={6}>
-                  <strong>Unit:</strong> {viewingReading.unit.name}
+                  <strong>Unit:</strong> {viewingReading.unit?.name || "N/A"}
                 </Col>
               </Row>
-              {viewingReading.lease && (
+              {viewingReading.people_name && (
                 <Row className="mb-3">
                   <Col md={12}>
-                    <strong>Lease:</strong> Lease #{viewingReading.lease.id} - {viewingReading.lease.lease_terms}
+                    <strong>People Name:</strong> {viewingReading.people_name}
                   </Col>
                 </Row>
               )}
               <Row className="mb-3">
                 <Col md={6}>
                   <strong>Reading Date:</strong>{" "}
-                  {viewingReading.reading.reading_date
-                    ? moment(viewingReading.reading.reading_date).format("YYYY-MM-DD")
+                  {viewingReading.reading_date
+                    ? moment(viewingReading.reading_date).format("YYYY-MM-DD")
                     : "N/A"}
                 </Col>
                 <Col md={6}>
                   <strong>Month/Year:</strong>{" "}
-                  {viewingReading.reading.reading_month || viewingReading.reading.reading_year
-                    ? `${viewingReading.reading.reading_month || ""} ${viewingReading.reading.reading_year || ""}`.trim()
+                  {viewingReading.reading_month || viewingReading.reading_year
+                    ? `${viewingReading.reading_month || ""} ${viewingReading.reading_year || ""}`.trim()
                     : "N/A"}
                 </Col>
               </Row>
               <Row className="mb-3">
                 <Col md={6}>
                   <strong>Previous Value:</strong>{" "}
-                  {viewingReading.reading.previous_value !== null
-                    ? parseFloat(viewingReading.reading.previous_value).toFixed(3)
+                  {viewingReading.previous_value !== null && viewingReading.previous_value !== undefined
+                    ? parseFloat(viewingReading.previous_value).toFixed(3)
                     : "N/A"}
                 </Col>
                 <Col md={6}>
                   <strong>Current Value:</strong>{" "}
-                  {viewingReading.reading.current_value !== null
-                    ? parseFloat(viewingReading.reading.current_value).toFixed(3)
+                  {viewingReading.current_value !== null && viewingReading.current_value !== undefined
+                    ? parseFloat(viewingReading.current_value).toFixed(3)
                     : "N/A"}
                 </Col>
               </Row>
               <Row className="mb-3">
                 <Col md={6}>
                   <strong>Unit Price:</strong>{" "}
-                  {viewingReading.reading.unit_price !== null
-                    ? parseFloat(viewingReading.reading.unit_price).toFixed(2)
+                  {viewingReading.unit_price !== null && viewingReading.unit_price !== undefined
+                    ? parseFloat(viewingReading.unit_price).toFixed(2)
                     : "N/A"}
                 </Col>
                 <Col md={6}>
                   <strong>Total Amount:</strong>{" "}
-                  {viewingReading.reading.total_amount !== null
-                    ? parseFloat(viewingReading.reading.total_amount).toFixed(2)
+                  {viewingReading.total_amount !== null && viewingReading.total_amount !== undefined
+                    ? parseFloat(viewingReading.total_amount).toFixed(2)
                     : "N/A"}
                 </Col>
               </Row>
-              {viewingReading.reading.notes && (
+              {viewingReading.notes && (
                 <Row className="mb-3">
                   <Col md={12}>
                     <strong>Notes:</strong>
-                    <p>{viewingReading.reading.notes}</p>
+                    <p>{viewingReading.notes}</p>
                   </Col>
                 </Row>
               )}
               <Row className="mb-3">
                 <Col md={6}>
                   <strong>Created At:</strong>{" "}
-                  {viewingReading.reading.created_at
-                    ? moment(viewingReading.reading.created_at).format("YYYY-MM-DD HH:mm:ss")
+                  {viewingReading.created_at
+                    ? moment(viewingReading.created_at).format("YYYY-MM-DD HH:mm:ss")
                     : "N/A"}
                 </Col>
                 <Col md={6}>
                   <strong>Updated At:</strong>{" "}
-                  {viewingReading.reading.updated_at
-                    ? moment(viewingReading.reading.updated_at).format("YYYY-MM-DD HH:mm:ss")
+                  {viewingReading.updated_at
+                    ? moment(viewingReading.updated_at).format("YYYY-MM-DD HH:mm:ss")
                     : "N/A"}
                 </Col>
               </Row>

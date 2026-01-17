@@ -77,7 +77,7 @@ const EditSalesReceipt = () => {
       try {
         const payload = {
           id: parseInt(receiptId),
-          receipt_no: values.receipt_no,
+          receipt_no: parseInt(values.receipt_no),
           receipt_date: values.receipt_date,
           unit_id: values.unit_id ? parseInt(values.unit_id) : null,
           people_id: values.people_id ? parseInt(values.people_id) : null,
@@ -98,7 +98,7 @@ const EditSalesReceipt = () => {
 
         let url = `sales-receipts/${receiptId}`;
         if (buildingId) {
-          url = `buildings/${buildingId}/sales-receipts/${receiptId}`;
+          url = `v1/buildings/${buildingId}/sales-receipts/${receiptId}`;
         }
 
         const config = {
@@ -107,7 +107,7 @@ const EditSalesReceipt = () => {
           },
         };
 
-        const { data } = await axiosInstance.put(url, payload, config);
+        const { data } = await axiosInstance.put(url, payload);
         toast.success("Sales receipt updated successfully");
         navigate(`/building/${buildingId}/sales-receipts`);
       } catch (err) {
@@ -123,10 +123,10 @@ const EditSalesReceipt = () => {
     try {
       let url = "items";
       if (buildingId) {
-        url = `buildings/${buildingId}/items`;
+        url = `v1/buildings/${buildingId}/items`;
       }
       const { data } = await axiosInstance.get(url);
-      setItems(data || []);
+      setItems(data.data || []);
     } catch (error) {
       console.log("Error fetching items", error);
     }
@@ -136,10 +136,10 @@ const EditSalesReceipt = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -149,11 +149,11 @@ const EditSalesReceipt = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      const customers = (data || []).filter((person) => {
-        const typeTitle = person.people_type?.title || person.type?.title || "";
+      const customers = (data.data || []).filter((person) => {
+        const typeTitle = person.type?.title || person.type?.title || "";
         return typeTitle.toLowerCase() === "customer";
       });
       setPeople(customers);
@@ -168,8 +168,8 @@ const EditSalesReceipt = () => {
       return;
     }
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/units-by-people/${peopleId}`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/people/${peopleId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units for people", error);
       setUnits([]);
@@ -180,13 +180,13 @@ const EditSalesReceipt = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
       
-      const assetAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const assetAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase().includes("asset") || 
                typeName.toLowerCase().includes("cash") ||
                typeName.toLowerCase().includes("bank");
@@ -202,12 +202,12 @@ const EditSalesReceipt = () => {
       setLoading(true);
       let url = `sales-receipts/${receiptId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/sales-receipts/${receiptId}`;
+        url = `v1/buildings/${buildingId}/sales-receipts/${receiptId}`;
       }
       const { data: receiptResponse } = await axiosInstance.get(url);
       
-      const receiptData = receiptResponse.receipt || receiptResponse;
-      const itemsData = receiptResponse.items || [];
+      const receiptData = receiptResponse.data.receipt || receiptResponse.data;
+      const itemsData = receiptResponse.data.items || [];
       
       const formatDate = (dateStr) => {
         if (!dateStr) return "";

@@ -35,8 +35,8 @@ const Leases = () => {
 
   const fetchPeople = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/people`);
-      setPeople(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/people`);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -44,8 +44,8 @@ const Leases = () => {
 
   const fetchUnits = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/units`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -54,8 +54,8 @@ const Leases = () => {
   const fetchLeases = async () => {
     try {
       setLoading(true);
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases`);
-      setLeases(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/leases`);
+      setLeases(data.data || []);
     } catch (error) {
       console.log("Error fetching leases", error);
       toast.error("Failed to fetch leases");
@@ -67,8 +67,8 @@ const Leases = () => {
   const fetchLeaseDetails = async (leaseId) => {
     try {
       setLoading(true);
-      const { data: leaseResponse } = await axiosInstance.get(`buildings/${buildingId}/leases/${leaseId}`);
-      setViewingLease(leaseResponse);
+      const { data: leaseResponse } = await axiosInstance.get(`v1/buildings/${buildingId}/leases/${leaseId}`);
+      setViewingLease(leaseResponse.data);
       setShowLeaseDetailsModal(true);
     } catch (error) {
       console.log("Error fetching lease details", error);
@@ -105,7 +105,7 @@ const Leases = () => {
   const downloadFile = async (leaseId, fileId, originalName) => {
     try {
       const response = await axiosInstance.get(
-        `buildings/${buildingId}/leases/${leaseId}/files/${fileId}/download`,
+        `v1/buildings/${buildingId}/leases/${leaseId}/files/${fileId}/download`,
         { responseType: "blob" }
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -202,8 +202,8 @@ const Leases = () => {
           const lease = cell.row.original.lease || cell.row.original;
           const status = lease.status;
           return (
-            <Badge color={status === "1" ? "success" : "secondary"}>
-              {status === "1" ? "Active" : "Inactive"}
+            <Badge color={status == "1" ? "success" : "secondary"}>
+              {status == "1" ? "Active" : "Inactive"}
             </Badge>
           );
         },
@@ -321,8 +321,8 @@ const Leases = () => {
               <Row className="mb-3">
                 <Col md={12}>
                   <strong>Status:</strong>{" "}
-                  <Badge color={viewingLease.lease.status === "1" ? "success" : "secondary"}>
-                    {viewingLease.lease.status === "1" ? "Active" : "Inactive"}
+                  <Badge color={viewingLease.lease.status == "1" ? "success" : "secondary"}>
+                    {viewingLease.lease.status == "1" ? "Active" : "Inactive"}
                   </Badge>
                 </Col>
               </Row>

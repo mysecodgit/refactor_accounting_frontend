@@ -37,10 +37,10 @@ const SalesReceipts = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -50,10 +50,10 @@ const SalesReceipts = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      setPeople(data || []);
+      setPeople(data.data || []);
     } catch (error) {
       console.log("Error fetching people", error);
     }
@@ -63,10 +63,10 @@ const SalesReceipts = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
     } catch (error) {
       console.log("Error fetching accounts", error);
     }
@@ -77,12 +77,12 @@ const SalesReceipts = () => {
       setLoading(true);
       let url = "sales-receipts";
       if (buildingId) {
-        url = `buildings/${buildingId}/sales-receipts`;
+        url = `v1/buildings/${buildingId}/sales-receipts`;
       } else {
         url = `sales-receipts?building_id=${buildingId || ""}`;
       }
       const { data } = await axiosInstance.get(url);
-      setReceipts(data || []);
+      setReceipts(data.data || []);
     } catch (error) {
       console.log("Error fetching sales receipts", error);
       toast.error("Failed to fetch sales receipts");
@@ -96,10 +96,10 @@ const SalesReceipts = () => {
       setLoading(true);
       let url = `sales-receipts/${receiptId}`;
       if (buildingId) {
-        url = `buildings/${buildingId}/sales-receipts/${receiptId}`;
+        url = `v1/buildings/${buildingId}/sales-receipts/${receiptId}`;
       }
       const { data: receiptResponse } = await axiosInstance.get(url);
-      setViewingReceipt(receiptResponse);
+      setViewingReceipt(receiptResponse.data);
       setShowReceiptDetailsModal(true);
     } catch (error) {
       console.log("Error fetching sales receipt details", error);

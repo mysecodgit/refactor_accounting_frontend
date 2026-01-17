@@ -76,7 +76,7 @@ const CreateSalesReceipt = () => {
       setIsSubmitting(true);
       try {
         const payload = {
-          receipt_no: values.receipt_no,
+          receipt_no: parseInt(values.receipt_no),
           receipt_date: values.receipt_date,
           unit_id: values.unit_id ? parseInt(values.unit_id) : null,
           people_id: values.people_id ? parseInt(values.people_id) : null,
@@ -97,7 +97,7 @@ const CreateSalesReceipt = () => {
 
         let url = "sales-receipts";
         if (buildingId) {
-          url = `buildings/${buildingId}/sales-receipts`;
+          url = `v1/buildings/${buildingId}/sales-receipts`;
         }
 
         const config = {
@@ -106,7 +106,7 @@ const CreateSalesReceipt = () => {
           },
         };
 
-        const { data } = await axiosInstance.post(url, payload, config);
+        const { data } = await axiosInstance.post(url, payload);
         toast.success("Sales receipt created successfully");
         navigate(`/building/${buildingId}/sales-receipts`);
       } catch (err) {
@@ -122,10 +122,10 @@ const CreateSalesReceipt = () => {
     try {
       let url = "items";
       if (buildingId) {
-        url = `buildings/${buildingId}/items`;
+        url = `v1/buildings/${buildingId}/items`;
       }
       const { data } = await axiosInstance.get(url);
-      setItems(data || []);
+      setItems(data.data || []);
     } catch (error) {
       console.log("Error fetching items", error);
     }
@@ -135,10 +135,10 @@ const CreateSalesReceipt = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -148,11 +148,11 @@ const CreateSalesReceipt = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
-      const customers = (data || []).filter((person) => {
-        const typeTitle = person.people_type?.title || person.type?.title || "";
+      const customers = (data.data || []).filter((person) => {
+        const typeTitle = person.type?.title || person.type?.title || "";
         return typeTitle.toLowerCase() === "customer";
       });
       setPeople(customers);
@@ -167,8 +167,8 @@ const CreateSalesReceipt = () => {
       return;
     }
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/units-by-people/${peopleId}`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/people/${peopleId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units for people", error);
       setUnits([]);
@@ -179,13 +179,13 @@ const CreateSalesReceipt = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
       
-      const assetAccountsList = (data || []).filter((account) => {
-        const typeName = account.account_type?.typeName || "";
+      const assetAccountsList = (data.data || []).filter((account) => {
+        const typeName = account.type?.typeName || "";
         return typeName.toLowerCase().includes("asset") || 
                typeName.toLowerCase().includes("cash") ||
                typeName.toLowerCase().includes("bank");

@@ -45,7 +45,7 @@ const EditLease = () => {
       deposit_amount: 0,
       service_amount: 0,
       lease_terms: "",
-      status: "1",
+      status: 1,
     },
     validationSchema: Yup.object({
       people_id: Yup.number().required("Customer is required").min(1, "Please select a customer"),
@@ -56,7 +56,7 @@ const EditLease = () => {
       deposit_amount: Yup.number().min(0, "Deposit amount cannot be negative").required("Deposit amount is required"),
       service_amount: Yup.number().min(0, "Service amount cannot be negative").required("Service amount is required"),
       lease_terms: Yup.string().required("Lease terms are required"),
-      status: Yup.string().required("Status is required"),
+      status: Yup.number().required("Status is required"),
     }),
     onSubmit: async (values) => {
       try {
@@ -70,8 +70,9 @@ const EditLease = () => {
           deposit_amount: parseFloat(values.deposit_amount),
           service_amount: parseFloat(values.service_amount),
           end_date: values.end_date || null,
+          status: parseInt(values.status),
         };
-        await axiosInstance.put(`buildings/${buildingId}/leases/${leaseId}`, payload);
+        await axiosInstance.put(`v1/buildings/${buildingId}/leases/${leaseId}`, payload);
         toast.success("Lease updated successfully");
 
         // Upload new files if any
@@ -94,8 +95,8 @@ const EditLease = () => {
   const fetchLeaseForEdit = async () => {
     try {
       setLoading(true);
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/${leaseId}`);
-      const lease = data.lease || data;
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/leases/${leaseId}`);
+      const lease = data.data.lease || data.data;
       
       validation.setValues({
         people_id: lease.people_id || "",
@@ -106,11 +107,11 @@ const EditLease = () => {
         deposit_amount: lease.deposit_amount || 0,
         service_amount: lease.service_amount || 0,
         lease_terms: lease.lease_terms || "",
-        status: lease.status || "1",
+        status: lease.status,
       });
 
-      if (data.lease_files) {
-        setExistingFiles(data.lease_files);
+      if (data.data.lease_files) {
+        setExistingFiles(data.data.lease_files);
       }
 
       // Fetch available units including the current unit
@@ -129,8 +130,8 @@ const EditLease = () => {
 
   const fetchCustomers = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/customers`);
-      setCustomers(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/people`);
+      setCustomers(data.data || []);
     } catch (error) {
       console.log("Error fetching customers", error);
       toast.error("Failed to fetch customers");
@@ -139,12 +140,12 @@ const EditLease = () => {
 
   const fetchUnits = async (includeUnitId = null) => {
     try {
-      let url = `buildings/${buildingId}/leases/available-units`;
+      let url = `v1/buildings/${buildingId}/available-units`;
       if (includeUnitId) {
         url += `?include_unit_id=${includeUnitId}`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching available units", error);
       toast.error("Failed to fetch available units");
@@ -172,7 +173,7 @@ const EditLease = () => {
 
   const deleteExistingFile = async (fileId) => {
     try {
-      await axiosInstance.delete(`buildings/${buildingId}/leases/${leaseId}/files/${fileId}`);
+      await axiosInstance.delete(`v1/buildings/${buildingId}/leases/${leaseId}/files/${fileId}`);
       setExistingFiles((prev) => prev.filter((f) => f.id !== fileId));
       toast.success("File deleted successfully");
     } catch (error) {
@@ -184,7 +185,7 @@ const EditLease = () => {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      await axiosInstance.post(`buildings/${buildingId}/leases/${leaseId}/files`, formData, {
+      await axiosInstance.post(`v1/buildings/${buildingId}/leases/${leaseId}/files`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -383,7 +384,7 @@ const EditLease = () => {
                             name="status"
                             type="select"
                             className="form-select"
-                            value={validation.values.status}
+                            value={validation.values.status.toString()}
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
                             invalid={validation.touched.status && validation.errors.status ? true : false}

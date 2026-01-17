@@ -67,8 +67,9 @@ const CreateLease = () => {
           deposit_amount: parseFloat(values.deposit_amount),
           service_amount: parseFloat(values.service_amount),
           end_date: values.end_date || null,
+          status: parseInt(values.status),
         };
-        const { data } = await axiosInstance.post(`buildings/${buildingId}/leases`, payload);
+        const { data } = await axiosInstance.post(`v1/buildings/${buildingId}/leases`, payload);
         toast.success("Lease created successfully");
 
         // Upload files if any
@@ -90,8 +91,8 @@ const CreateLease = () => {
 
   const fetchCustomers = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/customers`);
-      setCustomers(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/people`);
+      setCustomers(data.data || []);
     } catch (error) {
       console.log("Error fetching customers", error);
       toast.error("Failed to fetch customers");
@@ -100,8 +101,8 @@ const CreateLease = () => {
 
   const fetchUnits = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/available-units`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/available-units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching available units", error);
       toast.error("Failed to fetch available units");
@@ -126,7 +127,7 @@ const CreateLease = () => {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      await axiosInstance.post(`buildings/${buildingId}/leases/${leaseId}/files`, formData, {
+      await axiosInstance.post(`v1/buildings/${buildingId}/leases/${leaseId}/files`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
