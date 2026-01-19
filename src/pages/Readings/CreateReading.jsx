@@ -118,25 +118,13 @@ const CreateReading = () => {
           };
         });
 
-        const response = await axiosInstance.post(`v1/buildings/${buildingId}/readings/import`, {
+        const response = await axiosInstance.post(`v1/buildings/${buildingId}/readings`, {
           readings: readingsToCreate,
         });
-
-        const successCount = response.data.data.success_count || 0;
-        const failedCount = response.data.data.failed_count || 0;
-
-        if (successCount > 0) {
-          toast.success(`Successfully created ${successCount} reading(s)`);
-        }
-        if (failedCount > 0) {
-          toast.warning(`${failedCount} reading(s) failed to create`);
-        }
-        if (response.data.data.errors && response.data.data.errors.length > 0) {
-          response.data.data.errors.forEach((error) => toast.error(error));
-        }
-
+        
         navigate(`/building/${buildingId}/readings`);
       } catch (error) {
+        console.log("Error creating readings", error);
         const errorMsg = error.response?.data?.error || "Failed to create readings";
         toast.error(errorMsg);
       } finally {
@@ -187,7 +175,7 @@ const CreateReading = () => {
     }
 
     try {
-      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/leases/unit/${unitId}`);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/units/${unitId}/active_lease`);
       setRows((prevRows) =>
         prevRows.map((row) =>
           row.id === rowId

@@ -401,7 +401,7 @@ const Invoices = () => {
         },
       };
 
-      await axiosInstance.post(url, payload, config);
+      await axiosInstance.post(url, payload);
       toast.success("Credit applied successfully");
       
       // Refresh applied credits and available credits
@@ -949,6 +949,15 @@ const Invoices = () => {
         },
       },
       {
+        header: "Applied Discounts",
+        accessorKey: "applied_discounts_total",
+        enableColumnFilter: false,
+        enableSorting: true,
+        cell: (cell) => {
+          return <>{parseFloat(cell.row.original.applied_discounts_total || 0).toFixed(2)}</>;
+        },
+      },
+      {
         header: "Balance",
         accessorKey: "balance",
         enableColumnFilter: false,
@@ -957,7 +966,8 @@ const Invoices = () => {
           const amount = parseFloat(cell.row.original.amount || 0);
           const paidAmount = parseFloat(cell.row.original.paid_amount || 0);
           const appliedCredits = parseFloat(cell.row.original.applied_credits_total || 0);
-          const balance = Math.round((amount - paidAmount - appliedCredits) * 100) / 100;
+          const appliedDiscounts = parseFloat(cell.row.original.applied_discounts_total || 0);
+          const balance = Math.round((amount - paidAmount - appliedCredits - appliedDiscounts - appliedDiscounts) * 100) / 100;
           return <>{balance.toFixed(2)}</>;
         },
       },
@@ -970,7 +980,8 @@ const Invoices = () => {
           const amount = parseFloat(cell.row.original.amount || 0);
           const paidAmount = parseFloat(cell.row.original.paid_amount || 0);
           const appliedCredits = parseFloat(cell.row.original.applied_credits_total || 0);
-          const balance = Math.round((amount - paidAmount - appliedCredits) * 100) / 100;
+          const appliedDiscounts = parseFloat(cell.row.original.applied_discounts_total || 0);
+          const balance = Math.round((amount - paidAmount - appliedCredits - appliedDiscounts - appliedDiscounts) * 100) / 100;
           
           let status = "Unpaid";
           let badgeClass = "bg-danger";
@@ -978,9 +989,12 @@ const Invoices = () => {
           if (Math.abs(balance) < 0.01) {
             status = "Paid";
             badgeClass = "bg-success";
-          } else if (balance < amount) {
+          } else if (balance < amount && balance > 0) {
             status = "Half Paid";
             badgeClass = "bg-warning";
+          } else if (balance < 0) {
+            status = "Over Paid";
+            badgeClass = "bg-secondary";
           }
           
           return (

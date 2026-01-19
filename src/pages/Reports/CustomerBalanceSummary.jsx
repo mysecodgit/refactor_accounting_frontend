@@ -50,9 +50,9 @@ const CustomerBalanceSummary = () => {
 
     setLoading(true);
     try {
-      let url = `buildings/${buildingId}/reports/customer-balance-summary?as_of_date=${asOfDate}`;
+      let url = `v1/buildings/${buildingId}/reports/customer-balance-summary?as_of_date=${asOfDate}`;
       const { data } = await axiosInstance.get(url);
-      setReport(data);
+      setReport(data.data);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch report");
       console.error("Error fetching customer balance summary:", error);
@@ -64,8 +64,8 @@ const CustomerBalanceSummary = () => {
   const fetchBuildingName = async () => {
     if (!buildingId) return;
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}`);
-      setBuildingName(data.name || "");
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}`);
+      setBuildingName(data.data.name || "");
     } catch (error) {
       console.error("Error fetching building name:", error);
     }

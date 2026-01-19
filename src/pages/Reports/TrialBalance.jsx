@@ -50,9 +50,9 @@ const TrialBalance = () => {
 
     setLoading(true);
     try {
-      const url = `buildings/${buildingId}/reports/trial-balance?as_of_date=${filters.as_of_date}`;
+      const url = `v1/buildings/${buildingId}/reports/trial-balance?as_of_date=${filters.as_of_date}`;
       const { data } = await axiosInstance.get(url);
-      setReport(data);
+      setReport(data.data);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch report");
       console.error("Error fetching report:", error);
@@ -64,8 +64,8 @@ const TrialBalance = () => {
   const fetchBuildingName = async () => {
     if (!buildingId) return;
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}`);
-      setBuildingName(data.name || "");
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}`);
+      setBuildingName(data.data.name || "");
     } catch (error) {
       console.error("Error fetching building name:", error);
     }

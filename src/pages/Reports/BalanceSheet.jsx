@@ -50,9 +50,9 @@ const BalanceSheet = () => {
 
     setLoading(true);
     try {
-      const url = `buildings/${buildingId}/reports/balance-sheet?as_of_date=${asOfDate}`;
+      const url = `v1/buildings/${buildingId}/reports/balance-sheet?as_of_date=${asOfDate}`;
       const { data } = await axiosInstance.get(url);
-      setBalanceSheet(data);
+      setBalanceSheet(data.data);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch balance sheet");
       console.error("Error fetching balance sheet:", error);
@@ -64,8 +64,8 @@ const BalanceSheet = () => {
   const fetchBuildingName = async () => {
     if (!buildingId) return;
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}`);
-      setBuildingName(data.name || "");
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}`);
+      setBuildingName(data.data.name || "");
     } catch (error) {
       console.error("Error fetching building name:", error);
     }

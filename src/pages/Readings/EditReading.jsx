@@ -79,7 +79,7 @@ const EditReading = () => {
           notes: values.notes || null,
           status: values.status,
         };
-        await axiosInstance.put(`buildings/${buildingId}/readings/${readingId}`, payload);
+        await axiosInstance.put(`v1/buildings/${buildingId}/readings/${readingId}`, payload);
         toast.success("Reading updated successfully");
         navigate(`/building/${buildingId}/readings`);
       } catch (error) {
@@ -93,8 +93,8 @@ const EditReading = () => {
 
   const fetchItems = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/items`);
-      setItems(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/items`);
+      setItems(data.data || []);
     } catch (error) {
       console.log("Error fetching items", error);
       toast.error("Failed to fetch items");
@@ -103,8 +103,8 @@ const EditReading = () => {
 
   const fetchUnits = async () => {
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/units`);
-      setUnits(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/units`);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
       toast.error("Failed to fetch units");
@@ -120,12 +120,12 @@ const EditReading = () => {
     }
 
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/leases/unit/${unitId}`);
-      setFilteredLeases(data || []);
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/units/${unitId}/active_lease`);
+      setFilteredLeases(data.data || []);
       // Clear lease_id if the selected lease is not in the filtered list
       if (validation.values.lease_id) {
         const selectedLeaseId = parseInt(validation.values.lease_id);
-        const leaseExists = (data || []).some((lease) => lease.lease?.id === selectedLeaseId);
+        const leaseExists = (data.data || []).some((lease) => lease.lease?.id === selectedLeaseId);
         if (!leaseExists) {
           validation.setFieldValue("lease_id", "");
         }
@@ -148,15 +148,15 @@ const EditReading = () => {
     }
 
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/readings/latest`, {
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/readings/latest`, {
         params: {
           item_id: itemId,
           unit_id: unitId,
         },
       });
 
-      if (data.reading && data.reading.current_value !== null) {
-        validation.setFieldValue("previous_value", data.reading.current_value.toString());
+      if (data.data && data.data.current_value !== null) {
+        validation.setFieldValue("previous_value", data.data.current_value.toString());
       } else if (!readingId) {
         // Only clear if we're creating, not editing
         validation.setFieldValue("previous_value", "");
@@ -206,7 +206,7 @@ const EditReading = () => {
     try {
       setLoading(true);
       // Soft delete by updating status to "0"
-      await axiosInstance.put(`buildings/${buildingId}/readings/${readingId}`, {
+      await axiosInstance.put(`v1/buildings/${buildingId}/readings/${readingId}`, {
         ...validation.values,
         status: "0",
       });
@@ -224,8 +224,8 @@ const EditReading = () => {
     if (!readingId) return;
     try {
       setLoading(true);
-      const { data } = await axiosInstance.get(`buildings/${buildingId}/readings/${readingId}`);
-      const reading = data.reading || data;
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}/readings/${readingId}`);
+      const reading = data.data || data;
       
       validation.setValues({
         item_id: reading.item_id || "",
@@ -243,7 +243,7 @@ const EditReading = () => {
       });
     } catch (error) {
       toast.error("Failed to fetch reading details");
-      navigate(`/building/${buildingId}/readings`);
+      // navigate(`/building/${buildingId}/readings`);
     } finally {
       setLoading(false);
     }
