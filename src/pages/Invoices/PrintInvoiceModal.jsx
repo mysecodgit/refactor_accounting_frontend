@@ -149,7 +149,7 @@ const PrintInvoiceModal = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {(printInvoiceData.invoice.items || []).filter(item => item.status === "1" || item.status === 1).map((item, index) => (
+                    {(printInvoiceData.items || []).filter(item => item.status === "1" || item.status === 1).map((item, index) => (
                       <tr key={index}>
                         <td>{item.item_name}</td>
                         <td>{item.previous_value !== null && item.previous_value !== undefined ? parseFloat(item.previous_value).toFixed(3).replace(/\.?0+$/, '') : "-"}</td>

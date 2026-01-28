@@ -224,10 +224,15 @@ const Invoices = () => {
         axiosInstance.get(buildingId ? `v1/buildings/${buildingId}/invoices/${invoiceId}/payments` : `invoices/${invoiceId}/payments`),
       ]);
 
-      const invoice = invoiceResponse.data.invoice || invoiceResponse.data;
-      const appliedCredits = appliedCreditsResponse.data || [];
-      const appliedDiscounts = appliedDiscountsResponse.data || [];
-      const payments = paymentsResponse.data || [];
+      const invoice = invoiceResponse.data.data.invoice || invoiceResponse.data.data;
+      const appliedCredits = appliedCreditsResponse.data.data || [];
+      const appliedDiscounts = appliedDiscountsResponse.data.data || [];
+      const payments = paymentsResponse.data.data || [];
+
+      console.log("payments", payments);
+      console.log("paymentsResponse ", paymentsResponse);
+
+      console.log("invoiceResponse", invoiceResponse.data.data.items);
 
       // Calculate totals
       const paidAmount = payments
@@ -251,7 +256,7 @@ const Invoices = () => {
           const allInvoicesResponse = await axiosInstance.get(invoicesUrl, {
             params: { status: "1" }
           });
-          const allInvoices = allInvoicesResponse.data || [];
+          const allInvoices = allInvoicesResponse.data.data || [];
           
           // Get invoices for the same unit created before this invoice (or with earlier sales_date)
           const previousInvoices = allInvoices.filter((inv) => {
@@ -283,7 +288,8 @@ const Invoices = () => {
       const dueAmount = Math.max(0, totalAmount - paidAmount - appliedCreditsTotal - appliedDiscountsTotal);
 
       setPrintInvoiceData({
-        invoice: invoiceResponse.data,
+        invoice: invoiceResponse.data.data.invoice,
+        items: invoiceResponse.data.data.items,
         paidAmount,
         appliedCreditsTotal,
         appliedDiscountsTotal,
