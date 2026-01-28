@@ -52,9 +52,10 @@ const ProfitAndLossByUnit = () => {
 
     setLoading(true);
     try {
-      const url = `buildings/${buildingId}/reports/profit-and-loss-by-unit?start_date=${filters.start_date}&end_date=${filters.end_date}`;
+      const url = `v1/buildings/${buildingId}/reports/profit-and-loss-by-unit?start_date=${filters.start_date}&end_date=${filters.end_date}`;
       const { data } = await axiosInstance.get(url);
-      setReport(data);
+      // Most /v1 endpoints wrap payload as { data: ... }
+      setReport(data?.data ?? data);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch report");
       console.error("Error fetching report:", error);
@@ -66,8 +67,8 @@ const ProfitAndLossByUnit = () => {
   const fetchBuildingName = async () => {
     if (!buildingId) return;
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}`);
-      setBuildingName(data.name || "");
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}`);
+      setBuildingName(data.data.name || "");
     } catch (error) {
       console.error("Error fetching building name:", error);
     }
@@ -274,7 +275,7 @@ const ProfitAndLossByUnit = () => {
                           <thead className="table-light">
                             <tr>
                               <th style={{ minWidth: "200px" }}>Account</th>
-                              {report.units.map((unit) => (
+                              {(report.units || []).map((unit) => (
                                 <th key={unit.unit_id} className="text-end" style={{ minWidth: "100px" }}>
                                   {unit.unit_name}
                                 </th>
@@ -287,18 +288,18 @@ const ProfitAndLossByUnit = () => {
                           <tbody>
                             {/* Income Section Header */}
                             <tr className="bg-light">
-                              <td colSpan={report.units.length + 2}>
+                              <td colSpan={(report.units || []).length + 2}>
                                 <strong>Income</strong>
                               </td>
                             </tr>
                             
                             {/* Income Accounts */}
-                            {report.income_accounts.map((account) => (
+                            {(report.income_accounts || []).map((account) => (
                               <tr key={`income-${account.account_id}`}>
                                 <td>
                                   {account.account_number} · {account.account_name}
                                 </td>
-                                {report.units.map((unit) => (
+                                {(report.units || []).map((unit) => (
                                   <td key={`${account.account_id}-${unit.unit_id}`} className="text-end">
                                     {account.balances[unit.unit_id] 
                                       ? formatNumber(account.balances[unit.unit_id])
@@ -316,7 +317,7 @@ const ProfitAndLossByUnit = () => {
                               <td>
                                 <strong>Total Income</strong>
                               </td>
-                              {report.units.map((unit) => (
+                              {(report.units || []).map((unit) => (
                                 <td key={`total-income-${unit.unit_id}`} className="text-end">
                                   <strong style={{ textDecoration: "underline" }}>
                                     {formatNumber(report.total_income[unit.unit_id] || 0)}
@@ -332,19 +333,19 @@ const ProfitAndLossByUnit = () => {
 
                             {/* Expense Section Header */}
                             <tr className="bg-light">
-                              <td colSpan={report.units.length + 2}>
+                              <td colSpan={(report.units || []).length + 2}>
                                 <strong>Expense</strong>
                               </td>
                             </tr>
                             
                             {/* Expense Accounts */}
-                            {report.expense_accounts.length > 0 ? (
-                              report.expense_accounts.map((account) => (
+                            {(report.expense_accounts || []).length > 0 ? (
+                              (report.expense_accounts || []).map((account) => (
                                 <tr key={`expense-${account.account_id}`}>
                                   <td>
                                     {account.account_number} · {account.account_name}
                                   </td>
-                                  {report.units.map((unit) => (
+                                  {(report.units || []).map((unit) => (
                                     <td key={`${account.account_id}-${unit.unit_id}`} className="text-end">
                                       {account.balances[unit.unit_id] 
                                         ? formatNumber(account.balances[unit.unit_id])
@@ -358,7 +359,7 @@ const ProfitAndLossByUnit = () => {
                               ))
                             ) : (
                               <tr>
-                                <td colSpan={report.units.length + 2} className="text-center text-muted">
+                                <td colSpan={(report.units || []).length + 2} className="text-center text-muted">
                                   No expense accounts
                                 </td>
                               </tr>
@@ -369,7 +370,7 @@ const ProfitAndLossByUnit = () => {
                               <td>
                                 <strong>Total Expenses</strong>
                               </td>
-                              {report.units.map((unit) => (
+                              {(report.units || []).map((unit) => (
                                 <td key={`total-expenses-${unit.unit_id}`} className="text-end">
                                   <strong style={{ textDecoration: "underline" }}>
                                     {formatNumber(report.total_expenses[unit.unit_id] || 0)}
@@ -388,7 +389,7 @@ const ProfitAndLossByUnit = () => {
                               <td>
                                 <strong>Net Income</strong>
                               </td>
-                              {report.units.map((unit) => (
+                              {(report.units || []).map((unit) => (
                                 <td key={`net-income-${unit.unit_id}`} className="text-end">
                                   <strong style={{ textDecoration: "underline" }}>
                                     {formatNumber(report.net_profit_loss[unit.unit_id] || 0)}
