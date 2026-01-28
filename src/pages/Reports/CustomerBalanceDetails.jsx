@@ -48,12 +48,12 @@ const CustomerBalanceDetails = () => {
     try {
       let url = "people";
       if (buildingId) {
-        url = `buildings/${buildingId}/people`;
+        url = `v1/buildings/${buildingId}/people`;
       }
       const { data } = await axiosInstance.get(url);
       // Filter to only customers
-      const customerList = (data || []).filter((person) => {
-        const typeTitle = person.people_type?.title || person.type?.title || "";
+      const customerList = (data.data || []).filter((person) => {
+        const typeTitle = person.type?.title || person.type?.title || "";
         return typeTitle.toLowerCase() === "customer";
       });
       setCustomers(customerList);
@@ -70,12 +70,12 @@ const CustomerBalanceDetails = () => {
 
     setLoading(true);
     try {
-      let url = `buildings/${buildingId}/reports/customer-balance-details?as_of_date=${asOfDate}`;
+      let url = `v1/buildings/${buildingId}/reports/customer-balance-detail?as_of_date=${asOfDate}`;
       if (peopleId) {
         url += `&people_id=${peopleId}`;
       }
       const { data } = await axiosInstance.get(url);
-      setReport(data);
+      setReport(data.data);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch report");
       console.error("Error fetching customer balance details:", error);

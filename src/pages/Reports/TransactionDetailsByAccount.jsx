@@ -52,10 +52,10 @@ const TransactionDetailsByAccount = () => {
     try {
       let url = "accounts";
       if (buildingId) {
-        url = `buildings/${buildingId}/accounts`;
+        url = `v1/buildings/${buildingId}/accounts`;
       }
       const { data } = await axiosInstance.get(url);
-      setAccounts(data || []);
+      setAccounts(data.data || []);
     } catch (error) {
       console.log("Error fetching accounts", error);
     }
@@ -65,10 +65,10 @@ const TransactionDetailsByAccount = () => {
     try {
       let url = "units";
       if (buildingId) {
-        url = `buildings/${buildingId}/units`;
+        url = `v1/buildings/${buildingId}/units`;
       }
       const { data } = await axiosInstance.get(url);
-      setUnits(data || []);
+      setUnits(data.data || []);
     } catch (error) {
       console.log("Error fetching units", error);
     }
@@ -82,7 +82,7 @@ const TransactionDetailsByAccount = () => {
 
     setLoading(true);
     try {
-      let url = `buildings/${buildingId}/reports/transaction-details-by-account?start_date=${startDate}&end_date=${endDate}`;
+      let url = `v1/buildings/${buildingId}/reports/transaction-details-by-account?start_date=${startDate}&end_date=${endDate}`;
       // Add multiple account_id parameters
       if (accountIds && accountIds.length > 0) {
         accountIds.forEach((accountId) => {
@@ -93,7 +93,7 @@ const TransactionDetailsByAccount = () => {
         url += `&unit_id=${unitId}`;
       }
       const { data } = await axiosInstance.get(url);
-      setReport(data);
+      setReport(data.data);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch report");
       console.error("Error fetching transaction details:", error);

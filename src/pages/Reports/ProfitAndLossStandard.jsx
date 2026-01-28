@@ -52,9 +52,9 @@ const ProfitAndLossStandard = () => {
 
     setLoading(true);
     try {
-      const url = `buildings/${buildingId}/reports/profit-and-loss-standard?start_date=${filters.start_date}&end_date=${filters.end_date}`;
+      const url = `v1/buildings/${buildingId}/reports/profit-and-loss-standard?start_date=${filters.start_date}&end_date=${filters.end_date}`;
       const { data } = await axiosInstance.get(url);
-      setReport(data);
+      setReport(data.data);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch report");
       console.error("Error fetching report:", error);
@@ -66,8 +66,8 @@ const ProfitAndLossStandard = () => {
   const fetchBuildingName = async () => {
     if (!buildingId) return;
     try {
-      const { data } = await axiosInstance.get(`buildings/${buildingId}`);
-      setBuildingName(data.name || "");
+      const { data } = await axiosInstance.get(`v1/buildings/${buildingId}`);
+      setBuildingName(data.data.name || "");
     } catch (error) {
       console.error("Error fetching building name:", error);
     }
