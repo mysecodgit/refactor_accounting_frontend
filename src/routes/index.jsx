@@ -36,6 +36,8 @@ import TrialBalance from "../pages/Reports/TrialBalance";
 import TransactionDetailsByAccount from "../pages/Reports/TransactionDetailsByAccount";
 import CustomerBalanceSummary from "../pages/Reports/CustomerBalanceSummary";
 import CustomerBalanceDetails from "../pages/Reports/CustomerBalanceDetails";
+import VendorBalanceSummary from "../pages/Reports/VendorBalanceSummary";
+import VendorBalanceDetails from "../pages/Reports/VendorBalanceDetails";
 import ProfitAndLossStandard from "../pages/Reports/ProfitAndLossStandard";
 import ProfitAndLossByUnit from "../pages/Reports/ProfitAndLossByUnit";
 import CreateInvoice from "../pages/Invoices/CreateInvoice";
@@ -44,6 +46,11 @@ import CreateSalesReceipt from "../pages/SalesReceipts/CreateSalesReceipt";
 import EditSalesReceipt from "../pages/SalesReceipts/EditSalesReceipt";
 import Checks from "../pages/Checks";
 import CreateCheck from "../pages/Checks/CreateCheck";
+import Bills from "../pages/Bills";
+import CreateBill from "../pages/Bills/CreateBill";
+import BillPayments from "../pages/BillPayments";
+import CreateBillPayment from "../pages/BillPayments/CreateBillPayment";
+import EditBillPayment from "../pages/BillPayments/EditBillPayment";
 import CreditMemos from "../pages/CreditMemos";
 import CreateCreditMemo from "../pages/CreditMemos/CreateCreditMemo";
 import Journals from "../pages/Journals";
@@ -80,6 +87,12 @@ const authProtectedRoutes = [
     { path: "/building/:id/checks", component: <Checks /> },
     { path: "/building/:id/checks/create", component: <CreateCheck /> },
     { path: "/building/:id/checks/:checkId/edit", component: <CreateCheck /> },
+    { path: "/building/:id/bills", component: <Bills /> },
+    { path: "/building/:id/bills/create", component: <CreateBill /> },
+    { path: "/building/:id/bills/:billId/edit", component: <CreateBill /> },
+    { path: "/building/:id/bill-payments", component: <BillPayments /> },
+    { path: "/building/:id/bill-payments/create", component: <CreateBillPayment /> },
+    { path: "/building/:id/bill-payments/:paymentId/edit", component: <EditBillPayment /> },
     { path: "/building/:id/credit-memos", component: <CreditMemos /> },
     { path: "/building/:id/credit-memos/create", component: <CreateCreditMemo /> },
     { path: "/building/:id/credit-memos/:creditMemoId/edit", component: <CreateCreditMemo /> },
@@ -97,6 +110,8 @@ const authProtectedRoutes = [
   { path: "/building/:id/reports/transaction-details-by-account", component: <TransactionDetailsByAccount /> },
   { path: "/building/:id/reports/customer-balance-summary", component: <CustomerBalanceSummary /> },
   { path: "/building/:id/reports/customer-balance-details", component: <CustomerBalanceDetails /> },
+  { path: "/building/:id/reports/vendor-balance-summary", component: <VendorBalanceSummary /> },
+  { path: "/building/:id/reports/vendor-balance-details", component: <VendorBalanceDetails /> },
   { path: "/building/:id/reports/profit-and-loss-standard", component: <ProfitAndLossStandard /> },
   { path: "/building/:id/reports/profit-and-loss-by-unit", component: <ProfitAndLossByUnit /> },
   { path: "/building/:id/buildings", component: <Buildings /> },
