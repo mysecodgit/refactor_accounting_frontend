@@ -399,7 +399,7 @@ const SidebarContent = (props) => {
                 <li>
                   <Link to="/permissions">
                     <i className="bx bx-key"></i>
-                    <span>{props.t("Permissions")}</span>
+                    <span>{props.t("Permissions")}</span>  {/* TODO : this is only for developer, so we need to hide it in production */}
                   </Link>
                 </li>
                 <li>
@@ -409,7 +409,8 @@ const SidebarContent = (props) => {
                   </Link>
                 </li>
 
-                <li>
+              {/* TODO : this is only for developer */}
+                {/* <li>
                   <Link to="#" className="has-arrow">
                     <i className="bx bx-cog"></i>
                     <span>{props.t("Settings")}</span>
@@ -429,7 +430,7 @@ const SidebarContent = (props) => {
                     </li>
 
                   </ul>
-                </li>
+                </li> */}
               </>
             )}
 
