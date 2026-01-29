@@ -186,7 +186,7 @@ const Login = (props) => {
                         ) : null}
                       </div>
 
-                      <div className="form-check">
+                      {/* <div className="form-check">
                         <input
                           type="checkbox"
                           className="form-check-input"
@@ -198,7 +198,7 @@ const Login = (props) => {
                         >
                           Remember me
                         </label>
-                      </div>
+                      </div> */}
 
                       <div className="mt-3 d-grid">
                         <button
@@ -209,12 +209,12 @@ const Login = (props) => {
                         </button>
                       </div>
 
-                      <div className="mt-4 text-center">
+                      {/* <div className="mt-4 text-center">
                         <Link to="/forgot-password" className="text-muted">
                           <i className="mdi mdi-lock me-1" />
                           Forgot your password?
                         </Link>
-                      </div>
+                      </div> */}
                     </Form>
                   </div>
                 </CardBody>
@@ -229,7 +229,7 @@ const Login = (props) => {
                 </p> */}
                 <p>
                   © {new Date().getFullYear()} Skote. Crafted with{" "}
-                  <i className="mdi mdi-heart text-danger" /> by Themesbrand
+                  <i className="mdi mdi-heart text-danger" /> by Hudeifa
                 </p>
               </div>
             </Col>
