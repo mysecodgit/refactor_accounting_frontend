@@ -34,6 +34,9 @@ const Users = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [users, setUsers] = useState([]);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [buildings, setBuildings] = useState([]);
+  const [assignBuildingModal, setAssignBuildingModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -54,7 +57,7 @@ const Users = () => {
       try {
         if (isEdit) {
           const { data } = await axiosInstance.put(
-            `users/${values.id}`,
+            `v1/users/${values.id}`,
             { 
               name: values.name,
               username: values.username,
@@ -67,7 +70,7 @@ const Users = () => {
           setIsNewModelOpen(false);
           fetchUsers();
         } else {
-          const { data } = await axiosInstance.post("users", {
+          const { data } = await axiosInstance.post("v1/users", {
             name: values.name,
             username: values.username,
             phone: values.phone,
@@ -88,8 +91,8 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data } = await axiosInstance.get("users");
-      setUsers(data || []);
+      const { data } = await axiosInstance.get("v1/users");
+      setUsers(data.data || []);
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -98,13 +101,23 @@ const Users = () => {
     }
   };
 
+  const fetchBuildings = async () => {
+    try {
+      const { data } = await axiosInstance.get("v1/buildings");
+      setBuildings(data.data || []);
+    } catch (error) {
+      console.log("Error fetching buildings", error);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchBuildings();
   }, []);
 
   const onDeleteUser = async () => {
     try {
-      await axiosInstance.delete("users/" + user.id);
+      await axiosInstance.delete("v1/users/" + user.id);
       toast.success("User deleted successfully");
       setDeleteModal(false);
       fetchUsers();
@@ -141,6 +154,27 @@ const Users = () => {
         enableSorting: true,
       },
       {
+        header: "Buildings",
+        accessorKey: "buildings",
+        enableColumnFilter: false,
+        enableSorting: false,
+        cell: (cell) => {
+          const buildings = cell.row.original.buildings || [];
+          if (buildings.length === 0) {
+            return <span className="text-muted">No buildings assigned</span>;
+          }
+          return (
+            <div>
+              {buildings.map((building, idx) => (
+                <span key={building.id} className="badge bg-primary me-1">
+                  {building.name}
+                </span>
+              ))}
+            </div>
+          );
+        },
+      },
+      {
         header: "Action",
         cell: (cellProps) => {
           return (
@@ -156,6 +190,18 @@ const Users = () => {
                 }}
               >
                 <i className="mdi mdi-pencil font-size-18" />
+              </Link>
+              <Link
+                to="#"
+                className="text-info"
+                onClick={() => {
+                  const userData = cellProps.row.original;
+                  setSelectedUser(userData);
+                  setAssignBuildingModal(true);
+                }}
+                title="Assign Buildings"
+              >
+                <i className="mdi mdi-office-building font-size-18" />
               </Link>
               <Link
                 to="#"
@@ -175,6 +221,33 @@ const Users = () => {
     ],
     []
   );
+
+  const handleAssignBuilding = async (buildingId) => {
+    try {
+      await axiosInstance.post(`v1/users/${selectedUser.id}/buildings`, {
+        building_id: buildingId,
+      });
+      toast.success("Building assigned successfully");
+      fetchUsers();
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || "Failed to assign building";
+      toast.error(errorMsg);
+    }
+  };
+
+  const handleUnassignBuilding = async (buildingId) => {
+    try {
+      await axiosInstance.delete(`v1/users/${selectedUser.id}/buildings/${buildingId}`);
+      toast.success("Building unassigned successfully");
+      fetchUsers();
+      // Refresh selected user data
+      const { data } = await axiosInstance.get(`v1/users/${selectedUser.id}`);
+      setSelectedUser(data.data);
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || "Failed to unassign building";
+      toast.error(errorMsg);
+    }
+  };
 
   return (
     <React.Fragment>
@@ -337,6 +410,62 @@ const Users = () => {
                   </Col>
                 </Row>
               </Form>
+            </ModalBody>
+          </Modal>
+          <Modal
+            isOpen={assignBuildingModal}
+            toggle={() => {
+              setAssignBuildingModal(!assignBuildingModal);
+              setSelectedUser(null);
+            }}
+            size="lg"
+          >
+            <ModalHeader
+              toggle={() => {
+                setAssignBuildingModal(!assignBuildingModal);
+                setSelectedUser(null);
+              }}
+              tag="h4"
+            >
+              Assign Buildings - {selectedUser?.name}
+            </ModalHeader>
+            <ModalBody>
+              <div className="mb-3">
+                <Label>Available Buildings</Label>
+                <div className="mt-2">
+                  {buildings.map((building) => {
+                    const isAssigned =
+                      selectedUser?.buildings?.some(
+                        (b) => b.id === building.id
+                      ) || false;
+                    return (
+                      <div
+                        key={building.id}
+                        className="d-flex justify-content-between align-items-center mb-2 p-2 border rounded"
+                      >
+                        <span>{building.name}</span>
+                        {isAssigned ? (
+                          <Button
+                            color="danger"
+                            size="sm"
+                            onClick={() => handleUnassignBuilding(building.id)}
+                          >
+                            Unassign
+                          </Button>
+                        ) : (
+                          <Button
+                            color="success"
+                            size="sm"
+                            onClick={() => handleAssignBuilding(building.id)}
+                          >
+                            Assign
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </ModalBody>
           </Modal>
         </Container>

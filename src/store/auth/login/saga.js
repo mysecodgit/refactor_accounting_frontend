@@ -6,11 +6,8 @@ import { apiError, loginSuccess, logoutUserSuccess } from "./actions";
 
 //Include Both Helper File with needed methods
 import { getFirebaseBackend } from "../../../helpers/firebase_helper";
-import {
-  postFakeLogin,
-  postJwtLogin,
-  postSocialLogin,
-} from "../../../helpers/fakebackend_helper";
+import { postSocialLogin } from "../../../helpers/fakebackend_helper";
+import axiosInstance from "../../../services/axiosService";
 
 const fireBaseBackend = getFirebaseBackend();
 
@@ -23,24 +20,32 @@ function* loginUser({ payload: { user, history } }) {
         user.password
       );
       yield put(loginSuccess(response));
-    } else if (import.meta.env.VITE_APP_DEFAULTAUTH === "jwt") {
-      const response = yield call(postJwtLogin, {
-        email: user.email,
+    } else {
+      // Real backend login (username/password)
+      const username = user.username || user.email; // fallback for older form field name
+      const { data } = yield call([axiosInstance, axiosInstance.post], "v1/auth/login", {
+        username,
         password: user.password,
       });
-      localStorage.setItem("authUser", JSON.stringify(response));
-      yield put(loginSuccess(response));
-    } else if (import.meta.env.VITE_APP_DEFAULTAUTH === "fake") {
-      const response = yield call(postFakeLogin, {
-        email: user.email,
-        password: user.password,
-      });
-      localStorage.setItem("authUser", JSON.stringify(response));
-      yield put(loginSuccess(response));
+      const payload = data?.data ?? data;
+
+      // Keep the shape expected by Authmiddleware + ProfileMenu
+      const authUser = {
+        accessToken: payload.accessToken,
+        username: payload.username || payload.user?.username || username,
+        user: payload.user,
+      };
+
+      localStorage.setItem("authUser", JSON.stringify(authUser));
+      yield put(loginSuccess(authUser));
     }
     history('/buildings-list');
   } catch (error) {
-    yield put(apiError(error));
+    const msg =
+      error?.response?.data?.error ||
+      error?.message ||
+      "Login failed";
+    yield put(apiError(msg));
   }
 }
 

@@ -17,7 +17,7 @@ const SidebarContent = (props) => {
   const ref = useRef();
   const path = useLocation();
   const { id: buildingId } = useParams();
-  
+
   // Helper function to build routes with building context
   const buildRoute = (route) => {
     if (buildingId) {
@@ -390,7 +390,13 @@ const SidebarContent = (props) => {
                     <span>{props.t("Buildings")}</span>
                   </Link>
                 </li>
-                
+                <li>
+                  <Link to="/users">
+                    <i className="bx bx-user-circle"></i>
+                    <span>{props.t("Users")}</span>
+                  </Link>
+                </li>
+
                 <li>
                   <Link to="#" className="has-arrow">
                     <i className="bx bx-cog"></i>
@@ -409,12 +415,7 @@ const SidebarContent = (props) => {
                         <span>{props.t("People Types")}</span>
                       </Link>
                     </li>
-                    <li>
-                      <Link to="/users">
-                        <i className="bx bx-user-circle"></i>
-                        <span>{props.t("Users")}</span>
-                      </Link>
-                    </li>
+
                   </ul>
                 </li>
               </>
