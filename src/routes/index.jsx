@@ -31,6 +31,8 @@ import CreateInvoicePayment from "../pages/InvoicePayments/CreateInvoicePayment"
 import EditInvoicePayment from "../pages/InvoicePayments/EditInvoicePayment";
 import SalesReceipts from "../pages/SalesReceipts";
 import Users from "../pages/Users";
+import Permissions from "../pages/Permissions";
+import Roles from "../pages/Roles";
 import BalanceSheet from "../pages/Reports/BalanceSheet";
 import TrialBalance from "../pages/Reports/TrialBalance";
 import TransactionDetailsByAccount from "../pages/Reports/TransactionDetailsByAccount";
@@ -133,6 +135,8 @@ const authProtectedRoutes = [
   { path: "/invoice-payments", component: <InvoicePayments /> },
   { path: "/sales-receipts", component: <SalesReceipts /> },
   { path: "/users", component: <Users /> },
+  { path: "/permissions", component: <Permissions /> },
+  { path: "/roles", component: <Roles /> },
   
   // Legacy routes
   { path: "/vendors", component: <Vendors /> },

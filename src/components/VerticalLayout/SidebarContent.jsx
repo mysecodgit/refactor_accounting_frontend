@@ -396,6 +396,18 @@ const SidebarContent = (props) => {
                     <span>{props.t("Users")}</span>
                   </Link>
                 </li>
+                <li>
+                  <Link to="/permissions">
+                    <i className="bx bx-key"></i>
+                    <span>{props.t("Permissions")}</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/roles">
+                    <i className="bx bx-shield"></i>
+                    <span>{props.t("Roles")}</span>
+                  </Link>
+                </li>
 
                 <li>
                   <Link to="#" className="has-arrow">

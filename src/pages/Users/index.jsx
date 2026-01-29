@@ -37,6 +37,10 @@ const Users = () => {
   const [buildings, setBuildings] = useState([]);
   const [assignBuildingModal, setAssignBuildingModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [roles, setRoles] = useState([]);
+  const [assignRoleModal, setAssignRoleModal] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [userBuildingRoles, setUserBuildingRoles] = useState([]);
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -110,9 +114,31 @@ const Users = () => {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const { data } = await axiosInstance.get("v1/roles");
+      setRoles(data.data || []);
+    } catch (error) {
+      console.log("Error fetching roles", error);
+    }
+  };
+
+  const fetchUserBuildingRoles = async (userId, buildingId) => {
+    try {
+      const { data } = await axiosInstance.get(
+        `v1/users/${userId}/buildings/${buildingId}/roles`
+      );
+      setUserBuildingRoles(data.data || []);
+    } catch (error) {
+      console.log("Error fetching user building roles", error);
+      setUserBuildingRoles([]);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchBuildings();
+    fetchRoles();
   }, []);
 
   const onDeleteUser = async () => {
@@ -154,7 +180,7 @@ const Users = () => {
         enableSorting: true,
       },
       {
-        header: "Buildings",
+        header: "Buildings & Roles",
         accessorKey: "buildings",
         enableColumnFilter: false,
         enableSorting: false,
@@ -166,9 +192,20 @@ const Users = () => {
           return (
             <div>
               {buildings.map((building, idx) => (
-                <span key={building.id} className="badge bg-primary me-1">
-                  {building.name}
-                </span>
+                <div key={building.id} className="mb-2">
+                  <div className="d-flex align-items-center mb-1">
+                    <span className="badge bg-primary me-1">{building.name}</span>
+                    {building.roles && building.roles.length > 0 && (
+                      <div className="d-flex flex-wrap gap-1">
+                        {building.roles.map((role) => (
+                          <span key={role.id} className="badge bg-info">
+                            {role.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
           );
@@ -202,6 +239,26 @@ const Users = () => {
                 title="Assign Buildings"
               >
                 <i className="mdi mdi-office-building font-size-18" />
+              </Link>
+              <Link
+                to="#"
+                className="text-warning"
+                onClick={() => {
+                  const userData = cellProps.row.original;
+                  setSelectedUser(userData);
+                  // Show building selection first
+                  if (userData.buildings && userData.buildings.length > 0) {
+                    // If user has buildings, show a prompt or use first building
+                    setSelectedBuilding(userData.buildings[0]);
+                    fetchUserBuildingRoles(userData.id, userData.buildings[0].id);
+                    setAssignRoleModal(true);
+                  } else {
+                    toast.info("Please assign buildings to this user first");
+                  }
+                }}
+                title="Assign Roles"
+              >
+                <i className="mdi mdi-shield-account font-size-18" />
               </Link>
               <Link
                 to="#"
@@ -466,6 +523,128 @@ const Users = () => {
                   })}
                 </div>
               </div>
+            </ModalBody>
+          </Modal>
+          <Modal
+            isOpen={assignRoleModal}
+            toggle={() => {
+              setAssignRoleModal(!assignRoleModal);
+              setSelectedUser(null);
+              setSelectedBuilding(null);
+              setUserBuildingRoles([]);
+            }}
+            size="lg"
+          >
+            <ModalHeader
+              toggle={() => {
+                setAssignRoleModal(!assignRoleModal);
+                setSelectedUser(null);
+                setSelectedBuilding(null);
+                setUserBuildingRoles([]);
+              }}
+              tag="h4"
+            >
+              Assign Role - {selectedUser?.name} {selectedBuilding && `(${selectedBuilding.name})`}
+            </ModalHeader>
+            <ModalBody>
+              {selectedUser?.buildings && selectedUser.buildings.length > 1 && (
+                <div className="mb-3">
+                  <Label>Select Building</Label>
+                  <Input
+                    type="select"
+                    value={selectedBuilding?.id || ""}
+                    onChange={(e) => {
+                      const buildingId = parseInt(e.target.value);
+                      const building = selectedUser.buildings.find(
+                        (b) => b.id === buildingId
+                      );
+                      setSelectedBuilding(building);
+                      fetchUserBuildingRoles(selectedUser.id, buildingId);
+                    }}
+                  >
+                    <option value="">Select Building</option>
+                    {selectedUser.buildings.map((building) => (
+                      <option key={building.id} value={building.id}>
+                        {building.name}
+                      </option>
+                    ))}
+                  </Input>
+                </div>
+              )}
+              {selectedBuilding && (
+                <div className="mb-3">
+                  <Label>Available Roles</Label>
+                  <div className="mt-2">
+                    {roles.map((role) => {
+                      const isAssigned = userBuildingRoles.some(
+                        (r) => r.id === role.id
+                      );
+                      return (
+                        <div
+                          key={role.id}
+                          className="d-flex justify-content-between align-items-center mb-2 p-2 border rounded"
+                        >
+                          <span>{role.name}</span>
+                          {isAssigned ? (
+                            <Button
+                              color="danger"
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  await axiosInstance.delete(
+                                    `v1/users/${selectedUser.id}/buildings/${selectedBuilding.id}/roles/${role.id}`
+                                  );
+                                  toast.success("Role unassigned successfully");
+                                  fetchUserBuildingRoles(
+                                    selectedUser.id,
+                                    selectedBuilding.id
+                                  );
+                                  fetchUsers();
+                                } catch (err) {
+                                  const errorMsg =
+                                    err.response?.data?.error ||
+                                    "Failed to unassign role";
+                                  toast.error(errorMsg);
+                                }
+                              }}
+                            >
+                              Unassign
+                            </Button>
+                          ) : (
+                            <Button
+                              color="success"
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  await axiosInstance.post(
+                                    `v1/users/${selectedUser.id}/buildings/${selectedBuilding.id}/roles`,
+                                    {
+                                      role_id: role.id,
+                                    }
+                                  );
+                                  toast.success("Role assigned successfully");
+                                  fetchUserBuildingRoles(
+                                    selectedUser.id,
+                                    selectedBuilding.id
+                                  );
+                                  fetchUsers();
+                                } catch (err) {
+                                  const errorMsg =
+                                    err.response?.data?.error ||
+                                    "Failed to assign role";
+                                  toast.error(errorMsg);
+                                }
+                              }}
+                            >
+                              Assign
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </ModalBody>
           </Modal>
         </Container>
